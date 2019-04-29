@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>AircraftWar</title>
+  </head>
+  <body>
+    <div id="test" draggable="true"></div>
+    <div style="width: 100px; height: 100px; background-color: aqua"></div>
+  </body>
+
+  <script>
+    import Vue from 'vue';
+    import Test from './test';
+  
+    const app = new Vue(Test).$mount('#test');
+
+    app.text = "Electron Forge with Vue.js!!!";
+  </script>
+</html>
