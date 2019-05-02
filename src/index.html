@@ -1,20 +1,24 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>AircraftWar</title>
-  </head>
-  <body>
-    <div id="test" draggable="true"></div>
-    <div style="width: 100px; height: 100px; background-color: aqua"></div>
-  </body>
 
-  <script>
-    import Vue from 'vue';
-    import Test from './test';
-  
-    const app = new Vue(Test).$mount('#test');
+<head>
+  <meta charset="utf-8">
+  <title>AircraftWar</title>
+</head>
 
-    app.text = "Electron Forge with Vue.js!!!";
-  </script>
+<body>
+  <div id="test" draggable="true"></div>
+  <div id="map"></div>
+</body>
+
+<script>
+  import Vue from 'vue';
+  import Test from './test';
+  import Map from './map'
+
+  // const test = new Vue(Test).$mount('#test');
+
+  const map = new Vue(Map).$mount('#map');
+
+</script>
 </html>

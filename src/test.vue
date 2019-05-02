@@ -1,14 +1,14 @@
 <template>
-  <h2>Hello from {{text}}</h2>
+  <h2>Hello from {{ text }}</h2>
 </template>
 
 <script>
 export default {
-  name: 'test',
+  name: "test",
   data() {
     return {
-      text: ''
-    }
+      text: "Electron Forge with Vue.js!!!"
+    };
   }
-}
+};
 </script>
