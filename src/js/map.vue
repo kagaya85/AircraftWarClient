@@ -1,14 +1,38 @@
 <template>
-  <div class="container">
+  <div class="map-container">
+    <!--这里的canvas不能使用css调整大小，会导致绘图尺寸错误-->
     <canvas ref="mapLayer" id="mapLayer" width="500px" height="500px"></canvas>
     <canvas
       ref="planeLayer"
       id="planeLayer"
       width="900px"
-      height="1000px"
+      height="500px"
+      v-show="showMe"
+    ></canvas>
+    <canvas
+      ref="enemyLayer"
+      id="enemyLayer"
+      v-if="showEnemy"
+      width="500px"
+      height="500px"
     ></canvas>
   </div>
 </template>
+
+<style scoped>
+.map-container {
+  position: relative;
+  height: 500px;
+}
+.map-container canvas {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  /* margin: 50px auto; */
+  /* box-shadow: -2px -2px 2px #F3F2F2, 5px 5px 5px #6F6767; */
+}
+</style>
 
 <script>
 export default {
@@ -21,7 +45,9 @@ export default {
       planes: [],
       gridSize: 50,
       pickedPlane: null,
-      offset: { x: 0, y: 0 }
+      offset: { x: 0, y: 0 },
+      showMe: true,
+      showEnemy: false
     };
   },
   methods: {
@@ -29,8 +55,14 @@ export default {
       this.drawBoard();
       // 初始化飞机
       var color = ["#39C5BB", "#66CCFF", "#FFBFCB"];
+      var offset = this.gridSize / 2;
       for (var i = 0; i < 3; i++) {
-        var p = new this.Plane(600, 160 + 300 * i, "left", color[i]);
+        var p = new this.Plane(
+          550 + offset * i,
+          225 + offset * i,
+          "left",
+          color[i]
+        );
         this.planes.push(p);
         this.drawPlane(p);
       }
@@ -370,18 +402,4 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-.container {
-  position: relative;
-}
-.container canvas {
-  display: block;
-  position: absolute;
-  left: 0;
-  top: 0;
-  /* margin: 50px auto; */
-  /* box-shadow: -2px -2px 2px #F3F2F2, 5px 5px 5px #6F6767; */
-}
-</style>
 

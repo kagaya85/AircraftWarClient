@@ -4,21 +4,22 @@
 <head>
   <meta charset="utf-8">
   <title>AircraftWar</title>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 
 <body>
-  <div id="test" draggable="true"></div>
   <div id="map"></div>
+  <!-- <div class="place-holder"></div> -->
+  <div id="panel"></div>
 </body>
 
 <script>
   import Vue from 'vue';
-  import Test from './test';
-  import Map from './map'
-
-  // const test = new Vue(Test).$mount('#test');
+  import Map from './js/map'
+  import Panel from './js/panel'
 
   const map = new Vue(Map).$mount('#map');
+  const panel = new Vue(Panel).$mount('#panel');
 
 </script>
 </html>
