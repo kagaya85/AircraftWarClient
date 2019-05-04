@@ -20,68 +20,248 @@ export default {
     return {
       planes: [],
       gridSize: 50,
-      mouse: { x: 0, y: 0 },
-      pickedPlane: null
+      pickedPlane: null,
+      offset: { x: 0, y: 0 }
     };
   },
   methods: {
     init: function() {
       this.drawBoard();
       // 初始化飞机
+      var color = ["#39C5BB", "#66CCFF", "#FFBFCB"];
       for (var i = 0; i < 3; i++) {
-        var p = new this.Plane(600, 160 + 300 * i, "left", "#39C5BB");
+        var p = new this.Plane(600, 160 + 300 * i, "left", color[i]);
         this.planes.push(p);
         this.drawPlane(p);
       }
       var canvas = this.$refs.planeLayer;
-      canvas.addEventListener("mousedown", mouseDownHandler);
-      canvas.addEventListener("mousemove", mouseMoveHandler);
-      canvas.addEventListener("mouseup", mouseUpHandler);
+      canvas.addEventListener("mousedown", this.mouseDownHandler);
+      canvas.addEventListener("mousemove", this.mouseMoveHandler);
+      canvas.addEventListener("mouseup", this.mouseUpHandler);
     },
-    mouseDownHandler: function(event) {
+    mouseDownHandler: function(e) {
       var canvas = this.$refs.planeLayer;
-      this.mouse = {
+      var mouse = {
         x: e.clientX - canvas.getBoundingClientRect().left,
         y: e.clientY - canvas.getBoundingClientRect().top
       };
+      var picked = -1;
+      var flag = false;
+      console.log(mouse.x, mouse.y);
       // 判断点击的图形，获取该对象，并放置在栈顶
-      // pickedPlane =
+      // 从最上面的图形开始判断
+      for (var i = this.planes.length - 1; i >= 0; i--) {
+        let p = this.planes[i];
+        let direct = p.direct;
+        let gridSize = this.gridSize;
+        switch (direct) {
+          case "left":
+            if (
+              mouse.x > p.posX &&
+              mouse.x < p.posX + 4 * gridSize &&
+              mouse.y > p.posY - gridSize &&
+              mouse.y < p.posY
+            ) {
+              // 机身
+              flag = true;
+            } else if (
+              mouse.x > p.posX + 1 * gridSize &&
+              mouse.x < p.posX + 2 * gridSize &&
+              mouse.y > p.posY - 3 * gridSize &&
+              mouse.y < p.posY + 2 * gridSize
+            ) {
+              // 前翼
+              flag = true;
+            } else if (
+              mouse.x > p.posX + 3 * gridSize &&
+              mouse.x < p.posX + 4 * gridSize &&
+              mouse.y > p.posY - 2 * gridSize &&
+              mouse.y < p.posY + 1 * gridSize
+            ) {
+              // 尾翼
+              flag = true;
+            }
 
-      offset = {
-        x: mouse.x - shape.x,
-        y: mouse.y - shape.y
+            break;
+          case "right":
+            if (
+              mouse.x < p.posX &&
+              mouse.x > p.posX - 4 * gridSize &&
+              mouse.y > p.posY - gridSize &&
+              mouse.y < p.posY
+            ) {
+              // 机身
+              flag = true;
+            } else if (
+              mouse.x < p.posX - 1 * gridSize &&
+              mouse.x > p.posX - 2 * gridSize &&
+              mouse.y > p.posY - 3 * gridSize &&
+              mouse.y < p.posY + 2 * gridSize
+            ) {
+              // 前翼
+              flag = true;
+            } else if (
+              mouse.x < p.posX - 3 * gridSize &&
+              mouse.x > p.posX - 4 * gridSize &&
+              mouse.y > p.posY - 2 * gridSize &&
+              mouse.y < p.posY + 1 * gridSize
+            ) {
+              // 尾翼
+              flag = true;
+            }
+
+            break;
+          case "up":
+            if (
+              mouse.x > p.posX &&
+              mouse.x < p.posX + 1 * gridSize &&
+              mouse.y > p.posY &&
+              mouse.y < p.posY + 4 * gridSize
+            ) {
+              // 机身
+              flag = true;
+            } else if (
+              mouse.x > p.posX - 2 * gridSize &&
+              mouse.x < p.posX + 3 * gridSize &&
+              mouse.y > p.posY + 1 * gridSize &&
+              mouse.y < p.posY + 2 * gridSize
+            ) {
+              // 前翼
+              flag = true;
+            } else if (
+              mouse.x > p.posX - 1 * gridSize &&
+              mouse.x < p.posX + 2 * gridSize &&
+              mouse.y > p.posY + 3 * gridSize &&
+              mouse.y < p.posY + 4 * gridSize
+            ) {
+              // 尾翼
+              flag = true;
+            }
+
+            break;
+          case "down":
+            if (
+              mouse.x > p.posX &&
+              mouse.x < p.posX + 1 * gridSize &&
+              mouse.y < p.posY &&
+              mouse.y > p.posY - 4 * gridSize
+            ) {
+              // 机身
+              flag = true;
+            } else if (
+              mouse.x > p.posX - 2 * gridSize &&
+              mouse.x < p.posX + 3 * gridSize &&
+              mouse.y < p.posY - 1 * gridSize &&
+              mouse.y > p.posY - 2 * gridSize
+            ) {
+              // 前翼
+              flag = true;
+            } else if (
+              mouse.x > p.posX - 1 * gridSize &&
+              mouse.x < p.posX + 2 * gridSize &&
+              mouse.y < p.posY - 3 * gridSize &&
+              mouse.y > p.posY - 4 * gridSize
+            ) {
+              // 尾翼
+              flag = true;
+            }
+
+            break;
+          default:
+            console.log(`Direction error: ${direct}.`);
+        }
+
+        if (flag == true) {
+          picked = i;
+          break;
+        }
+      }
+      if (flag == false || picked < 0) return; // 未选中飞机
+
+      this.pickedPlane = this.planes[picked];
+
+      // 调整选中飞机到最上层
+      if (picked < this.planes.length - 1) {
+        this.planes.splice(picked, 1);
+        this.planes.push(this.pickedPlane);
+      }
+
+      this.offset = {
+        x: mouse.x - this.pickedPlane.posX,
+        y: mouse.y - this.pickedPlane.posY
       };
     },
-    mouseMoveHandler: function(event) {
-      if (pickedPlane == null) {
+    mouseMoveHandler: function(e) {
+      if (this.pickedPlane == null) {
         return;
       }
 
       var canvas = this.$refs.planeLayer;
-      this.mouse = {
+      var mouse = {
         x: e.clientX - canvas.getBoundingClientRect().left,
         y: e.clientY - canvas.getBoundingClientRect().top
       };
 
-      pickedPlane.posX = mouse.x - offset.x;
-      pickedPlane.posY = mouse.y - offset.y;
+      this.pickedPlane.posX = mouse.x - this.offset.x;
+      this.pickedPlane.posY = mouse.y - this.offset.y;
 
       // 重新绘制
       var ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (var i = 0; i < planes.length; i++) {
-        this.drawPlane(planes[i]);
+      for (var i = 0; i < this.planes.length; i++) {
+        this.drawPlane(this.planes[i]);
       }
     },
-    mouseUpHandler: function(event) {
-      if (pickedPlane == null) {
+    mouseUpHandler: function(e) {
+      if (this.pickedPlane == null) {
         return;
       }
       var canvas = this.$refs.planeLayer;
+      var ctx = canvas.getContext("2d");
 
-      // 放置在固定位置
+      // 吸附棋盘
+      var p = this.pickedPlane;
+      var direct = p.direct;
+      var gridSize = this.gridSize;
+      switch (direct) {
+        case "left":
+          if (p.posX < 10 * gridSize && p.posY < 12 * gridSize) {
+            let dx = p.posX % gridSize;
+            let dy = p.posY % gridSize;
+            let boundary = gridSize / 2;
+            p.posX -= dx;
+            p.posY -= dy;
 
-      pickedPlane = null;
+            if (p.posX < 0) p.posX = 0;
+            else if (p.posX > 6 * gridSize) p.posX = 6 * gridSize;
+            else if (dx >= boundary) {
+              p.posX += gridSize;
+            }
+
+            if (p.posY < 3 * gridSize) p.posY = 3 * gridSize;
+            else if (p.posY > 8 * gridSize) p.posY = 8 * gridSize;
+            else if (dy >= boundary) {
+              p.posY += gridSize;
+            }
+          }
+          break;
+        case "right":
+          break;
+        case "up":
+          break;
+        case "down":
+          break;
+        default:
+          console.log(`Direction error: ${direct}`);
+          return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (var i = 0; i < this.planes.length; i++) {
+        this.drawPlane(this.planes[i]);
+      }
+
+      this.pickedPlane = null;
     },
     drawBoard: function() {
       var canvas = this.$refs.mapLayer;
@@ -106,8 +286,6 @@ export default {
       var [sx, sy] = [plane.posX, plane.posY];
       var size = this.gridSize;
 
-      console.log(sx, sy);
-
       ctx.beginPath();
       ctx.moveTo(sx, sy);
       if (plane.direct == "left") {
@@ -118,8 +296,8 @@ export default {
         ctx.lineTo(sx + size * 3, sy);
         ctx.lineTo(sx + size * 3, sy + size);
         ctx.lineTo(sx + size * 4, sy + size);
-        ctx.lineTo(sx + size * 4, sy - 2 * size);
-        ctx.lineTo(sx + size * 3, sy - 2 * size);
+        ctx.lineTo(sx + size * 4, sy - size * 2);
+        ctx.lineTo(sx + size * 3, sy - size * 2);
         ctx.lineTo(sx + size * 3, sy - size);
         ctx.lineTo(sx + size * 2, sy - size);
         ctx.lineTo(sx + size * 2, sy - size * 3);
@@ -128,8 +306,56 @@ export default {
         ctx.lineTo(sx, sy - size);
         ctx.closePath();
       } else if (plane.direct == "right") {
+        ctx.lineTo(sx - size, sy);
+        ctx.lineTo(sx - size, sy + size * 2);
+        ctx.lineTo(sx - size * 2, sy + size * 2);
+        ctx.lineTo(sx - size * 2, sy);
+        ctx.lineTo(sx - size * 3, sy);
+        ctx.lineTo(sx - size * 3, sy + size);
+        ctx.lineTo(sx - size * 4, sy + size);
+        ctx.lineTo(sx - size * 4, sy - size * 2);
+        ctx.lineTo(sx - size * 3, sy - size * 2);
+        ctx.lineTo(sx - size * 3, sy - size);
+        ctx.lineTo(sx - size * 2, sy - size);
+        ctx.lineTo(sx - size * 2, sy - size * 3);
+        ctx.lineTo(sx - size, sy - size * 3);
+        ctx.lineTo(sx - size, sy - size);
+        ctx.lineTo(sx, sy - size);
+        ctx.closePath();
       } else if (plane.direct == "up") {
+        ctx.lineTo(sx + size, sy);
+        ctx.lineTo(sx + size, sy + size);
+        ctx.lineTo(sx + size * 3, sy + size);
+        ctx.lineTo(sx + size * 3, sy + size * 2);
+        ctx.lineTo(sx + size * 1, sy + size * 2);
+        ctx.lineTo(sx + size * 1, sy + size * 3);
+        ctx.lineTo(sx + size * 2, sy + size * 3);
+        ctx.lineTo(sx + size * 2, sy + size * 4);
+        ctx.lineTo(sx - size, sy + size * 4);
+        ctx.lineTo(sx - size, sy + size * 3);
+        ctx.lineTo(sx, sy + size * 3);
+        ctx.lineTo(sx, sy + size * 2);
+        ctx.lineTo(sx - size * 2, sy + size * 2);
+        ctx.lineTo(sx - size * 2, sy + size);
+        ctx.lineTo(sx, sy + size);
+        ctx.closePath();
       } else if (plane.direct == "down") {
+        ctx.lineTo(sx + size, sy);
+        ctx.lineTo(sx + size, sy - size);
+        ctx.lineTo(sx + size * 3, sy - size);
+        ctx.lineTo(sx + size * 3, sy - size * 2);
+        ctx.lineTo(sx + size * 1, sy - size * 2);
+        ctx.lineTo(sx + size * 1, sy - size * 3);
+        ctx.lineTo(sx + size * 2, sy - size * 3);
+        ctx.lineTo(sx + size * 2, sy - size * 4);
+        ctx.lineTo(sx - size, sy - size * 4);
+        ctx.lineTo(sx - size, sy - size * 3);
+        ctx.lineTo(sx, sy - size * 3);
+        ctx.lineTo(sx, sy - size * 2);
+        ctx.lineTo(sx - size * 2, sy - size * 2);
+        ctx.lineTo(sx - size * 2, sy - size);
+        ctx.lineTo(sx, sy - size);
+        ctx.closePath();
       }
       ctx.stroke();
       ctx.fillStyle = plane.color;
