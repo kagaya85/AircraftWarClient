@@ -71,6 +71,14 @@ export default {
       canvas.addEventListener("mousemove", this.mouseMoveHandler);
       canvas.addEventListener("mouseup", this.mouseUpHandler);
     },
+    repaintPlane : function() {
+      var canvas = this.$refs.planeLayer;
+      var ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (var i = 0; i < this.planes.length; i++) {
+        this.drawPlane(this.planes[i]);
+      }
+    },
     mouseDownHandler: function(e) {
       var canvas = this.$refs.planeLayer;
       var mouse = {
@@ -238,11 +246,7 @@ export default {
       this.pickedPlane.posY = mouse.y - this.offset.y;
 
       // 重新绘制
-      var ctx = canvas.getContext("2d");
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (var i = 0; i < this.planes.length; i++) {
-        this.drawPlane(this.planes[i]);
-      }
+      this.repaintPlane();
     },
     mouseUpHandler: function(e) {
       if (this.pickedPlane == null) {
@@ -288,10 +292,7 @@ export default {
           return;
       }
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (var i = 0; i < this.planes.length; i++) {
-        this.drawPlane(this.planes[i]);
-      }
+      this.repaintPlane();
 
       this.pickedPlane = null;
     },
@@ -393,7 +394,31 @@ export default {
       ctx.fillStyle = plane.color;
       ctx.fill();
     },
-    Plane: function(x, y, direct, color) {
+    rotateHandler : function(event) {
+      var canvas = this.$refs.planeLayer;
+      var ctx = canvas.getContext("2d");
+
+      var direct = this.planes[this.planes.length - 1].direct;
+      switch (direct) {
+        case "left":
+          this.planes[this.planes.length - 1].direct = "up";
+          break;
+        case "right":
+          this.planes[this.planes.length - 1].direct = "down";
+          break;
+        case "up":
+          this.planes[this.planes.length - 1].direct = "right";
+          break;
+        case "down":
+          this.planes[this.planes.length - 1].direct = "left";
+          break;
+        default:
+          console.log(`Rotate error: ${direct}`);
+          return;
+      }
+      this.repaintPlane();
+    },
+    Plane : function(x, y, direct, color) {
       this.posX = x;
       this.posY = y;
       this.direct = direct; // left right up down

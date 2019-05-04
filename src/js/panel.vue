@@ -1,8 +1,8 @@
 <template>
   <div class="panel-container">
     <div class="preparation-phase" v-if="!isAction">
-      <button class="rotate-btn">Rotate</button>
-      <button class="ready-btn">Ready</button>
+      <button ref="rotateBtn" class="rotate-btn">Rotate</button>
+      <button class="ready-btn" @click="getReady">Ready</button>
     </div>
     <div class="action-phase" v-else>
       <div class="score-board">
@@ -18,14 +18,18 @@ export default {
   data: function() {
     return {
       roundNum : 0,
-      isAction : false
+      isAction : false,
+      dgram : null,
+      socket : null
     };
   },
   methods: {
-    rotatePlane : function() {
-
+    getReady : function(event) {
+      console.log("Get Ready!!!");
     },
-    getReady : function() {
+    initSocket : function() {
+      this.dgram = require('dgram');
+      this.socket = this.dgram.createSocket('udp4');
       
     }
   }

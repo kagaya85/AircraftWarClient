@@ -21,5 +21,7 @@
   const map = new Vue(Map).$mount('#map');
   const panel = new Vue(Panel).$mount('#panel');
 
+  panel.$refs.rotateBtn.addEventListener("click", map.rotateHandler);
+
 </script>
 </html>
