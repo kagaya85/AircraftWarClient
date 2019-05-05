@@ -2,26 +2,36 @@
 <html>
 
 <head>
-  <meta charset="utf-8">
-  <title>AircraftWar</title>
-  <link rel="stylesheet" type="text/css" href="css/style.css">
+    <meta charset="utf-8">
+    <title>AircraftWar</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 
 <body>
-  <div class="app">
-    <div id="map"></div>
-    <!-- <div class="place-holder"></div> -->
-    <div id="panel"></div>
-  </div>
+    <div id="login"></div>
+    <div class="app">
+        <div id="map"></div>
+        <!-- <div class="place-holder"></div> -->
+        <div id="panel"></div>
+    </div>
 </body>
 
 <script>
-  import Vue from 'vue';
-  import Map from './js/map'
-  import Panel from './js/panel'
+    import Vue from 'vue';
+    import Map from './js/map'
+    import Panel from './js/panel'
+    import Login from './js/login'
+    var dgram = require("dgram");
+    var host = "115.159.56.102";
+    var port = "23333";
 
-  const map = new Vue(Map).$mount('#map');
-  const panel = new Vue(Panel).$mount('#panel');
+    const login = new Vue(Login).$mount('#login');
+    const map = new Vue(Map).$mount('#map');
+    const panel = new Vue(Panel).$mount('#panel');
+
+    var socket = dgram.createSocket("udp4");
+    login.initSocket(socket, host, port);
+    panel.initSocket(socket, host, port);
 </script>
 
 </html>
