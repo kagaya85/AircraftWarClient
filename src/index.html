@@ -8,9 +8,11 @@
 </head>
 
 <body>
-  <div id="map"></div>
-  <!-- <div class="place-holder"></div> -->
-  <div id="panel"></div>
+  <div class="app">
+    <div id="map"></div>
+    <!-- <div class="place-holder"></div> -->
+    <div id="panel"></div>
+  </div>
 </body>
 
 <script>
@@ -20,8 +22,6 @@
 
   const map = new Vue(Map).$mount('#map');
   const panel = new Vue(Panel).$mount('#panel');
-
-  panel.$refs.rotateBtn.addEventListener("click", map.rotateHandler);
-
 </script>
+
 </html>

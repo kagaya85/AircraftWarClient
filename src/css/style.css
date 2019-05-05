@@ -1,3 +1,7 @@
+.app {
+    margin: 20px auto;
+}
+
 .panel-container {
-    margin-top: 50px
+    margin-top: 50px;
 }

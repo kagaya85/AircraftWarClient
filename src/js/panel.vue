@@ -1,18 +1,27 @@
 <template>
   <div class="panel-container">
     <div class="preparation-phase" v-if="!isAction">
-      <button ref="rotateBtn" class="rotate-btn">Rotate</button>
+      <button class="rotate-btn" @click="rotate">Rotate</button>
       <button class="ready-btn" @click="getReady">Ready</button>
     </div>
     <div class="action-phase" v-else>
       <div class="score-board">
-        <span class="round-num">回合数：{{roundNum}}</span>
+        <span class="round-num">战斗开始！！！回合数：{{roundNum}}</span>
       </div>
     </div>
   </div>
 </template>
 
+<style scoped>
+.panel-container {
+  text-align: center;
+  clear: both;
+}
+</style>
+
+
 <script>
+import bus from './bus';
 export default {
   name: "panel",
   data: function() {
@@ -26,16 +35,17 @@ export default {
   methods: {
     getReady : function(event) {
       console.log("Get Ready!!!");
+      this.isAction = true;
+      bus.$emit('ready', this.isAction);
     },
     initSocket : function() {
       this.dgram = require('dgram');
       this.socket = this.dgram.createSocket('udp4');
       
+    },
+    rotate : function() {
+      bus.$emit('rotate');
     }
   }
 };
 </script>
-
-<style scoped>
-
-</style>

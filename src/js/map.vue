@@ -1,19 +1,19 @@
 <template>
   <div class="map-container">
     <!--这里的canvas不能使用css调整大小，会导致绘图尺寸错误-->
-    <canvas ref="mapLayer" id="mapLayer" width="500px" height="500px"></canvas>
+    <canvas ref="mapLayer" id="mapLayer" width="800px" height="500px"></canvas>
     <canvas
       ref="planeLayer"
       id="planeLayer"
-      width="900px"
+      width="800px"
       height="500px"
-      v-show="showMe"
+      v-show="!showEnemy"
     ></canvas>
     <canvas
       ref="enemyLayer"
       id="enemyLayer"
       v-if="showEnemy"
-      width="500px"
+      width="800px"
       height="500px"
     ></canvas>
   </div>
@@ -23,20 +23,38 @@
 .map-container {
   position: relative;
   height: 500px;
+  /* text-align: center; */
 }
+/* .map-container::before .map-container::after {
+  content: "";
+  display: table;
+  clear: both;
+} */
 .map-container canvas {
   display: block;
   position: absolute;
+  /* left: 20%; */
+  /* transform: translateX(-50%); */
+  margin: 0px auto;
   left: 0;
+  right: 0;
   top: 0;
-  /* margin: 50px auto; */
-  /* box-shadow: -2px -2px 2px #F3F2F2, 5px 5px 5px #6F6767; */
+  bottom: 0;
+/* box-shadow: -2px -2px 2px #F3F2F2, 5px 5px 5px #6F6767; */
 }
 </style>
 
 <script>
+import bus from "./bus";
 export default {
   name: "map",
+  created: function() {
+    // panel事件处理
+    bus.$on("rotate", this.rotateHandler);
+    bus.$on("ready", isReady => {
+      this.showEnemy = isReady;
+    });
+  },
   mounted: function() {
     this.init();
   },
@@ -46,7 +64,6 @@ export default {
       gridSize: 50,
       pickedPlane: null,
       offset: { x: 0, y: 0 },
-      showMe: true,
       showEnemy: false
     };
   },
@@ -58,7 +75,7 @@ export default {
       var offset = this.gridSize / 2;
       for (var i = 0; i < 3; i++) {
         var p = new this.Plane(
-          550 + offset * i,
+          525 + offset * i,
           225 + offset * i,
           "left",
           color[i]
@@ -71,7 +88,7 @@ export default {
       canvas.addEventListener("mousemove", this.mouseMoveHandler);
       canvas.addEventListener("mouseup", this.mouseUpHandler);
     },
-    repaintPlane : function() {
+    repaintPlane: function() {
       var canvas = this.$refs.planeLayer;
       var ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -261,7 +278,7 @@ export default {
       var gridSize = this.gridSize;
       switch (direct) {
         case "left":
-          if (p.posX < 10 * gridSize && p.posY < 12 * gridSize) {
+          if (p.posX < 10 * gridSize && p.posY < 14 * gridSize) {
             let dx = p.posX % gridSize;
             let dy = p.posY % gridSize;
             let boundary = gridSize / 2;
@@ -270,22 +287,79 @@ export default {
 
             if (p.posX < 0) p.posX = 0;
             else if (p.posX > 6 * gridSize) p.posX = 6 * gridSize;
-            else if (dx >= boundary) {
+            else if (dx >= boundary && p.posX < 5 * gridSize) {
               p.posX += gridSize;
             }
 
             if (p.posY < 3 * gridSize) p.posY = 3 * gridSize;
             else if (p.posY > 8 * gridSize) p.posY = 8 * gridSize;
-            else if (dy >= boundary) {
+            else if (dy >= boundary  && p.posY < 7 * gridSize) {
               p.posY += gridSize;
             }
           }
           break;
         case "right":
+          if (p.posX < 13 * gridSize && p.posY < 14 * gridSize) {
+            let dx = p.posX % gridSize;
+            let dy = p.posY % gridSize;
+            let boundary = gridSize / 2;
+            p.posX -= dx;
+            p.posY -= dy;
+
+            if (p.posX < 4 * gridSize) p.posX = 4 * gridSize;
+            else if (p.posX > 10 * gridSize) p.posX = 10 * gridSize;
+            else if (dx >= boundary && p.posX < 9 * gridSize) {
+              p.posX += gridSize;
+            }
+
+            if (p.posY < 3 * gridSize) p.posY = 3 * gridSize;
+            else if (p.posY > 8 * gridSize) p.posY = 8 * gridSize;
+            else if (dy >= boundary && p.posY < 7 * gridSize) {
+              p.posY += gridSize;
+            }
+          }
           break;
         case "up":
+          if (p.posX < 14 * gridSize && p.posY < 10 * gridSize) {
+            let dx = p.posX % gridSize;
+            let dy = p.posY % gridSize;
+            let boundary = gridSize / 2;
+            p.posX -= dx;
+            p.posY -= dy;
+
+            if (p.posX < 2 * gridSize) p.posX = 2 * gridSize;
+            else if (p.posX > 7 * gridSize) p.posX = 7 * gridSize;
+            else if (dx >= boundary && p.posX < 6 * gridSize) {
+              p.posX += gridSize;
+            }
+
+            if (p.posY < 0) p.posY = 0;
+            else if (p.posY > 6 * gridSize) p.posY = 6 * gridSize;
+            else if (dy >= boundary && p.posY < 5 * gridSize) {
+              p.posY += gridSize;
+            }
+          }
           break;
         case "down":
+          if (p.posX < 12 * gridSize && p.posY < 14 * gridSize) {
+            let dx = p.posX % gridSize;
+            let dy = p.posY % gridSize;
+            let boundary = gridSize / 2;
+            p.posX -= dx;
+            p.posY -= dy;
+
+            if (p.posX < 2 * gridSize) p.posX = 2 * gridSize;
+            else if (p.posX > 7 * gridSize) p.posX = 7 * gridSize;
+            else if (dx >= boundary && p.posX < 6 * gridSize) {
+              p.posX += gridSize;
+            }
+
+            if (p.posY < 4 * gridSize) p.posY = 4 * gridSize;
+            else if (p.posY > 10 * gridSize) p.posY = 10 * gridSize;
+            else if (dy >= boundary && p.posY < 9 * gridSize) {
+              p.posY += gridSize;
+            }
+          }
           break;
         default:
           console.log(`Direction error: ${direct}`);
@@ -394,7 +468,7 @@ export default {
       ctx.fillStyle = plane.color;
       ctx.fill();
     },
-    rotateHandler : function(event) {
+    rotateHandler: function() {
       var canvas = this.$refs.planeLayer;
       var ctx = canvas.getContext("2d");
 
@@ -418,7 +492,7 @@ export default {
       }
       this.repaintPlane();
     },
-    Plane : function(x, y, direct, color) {
+    Plane: function(x, y, direct, color) {
       this.posX = x;
       this.posY = y;
       this.direct = direct; // left right up down
