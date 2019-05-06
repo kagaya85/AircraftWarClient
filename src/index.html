@@ -8,18 +8,20 @@
 </head>
 
 <body>
+    <div class="header">
+        <b class="title">Aircraft War</b>
+    </div>
     <div id="login"></div>
     <div class="app">
         <div id="map"></div>
-        <!-- <div class="place-holder"></div> -->
-        <div id="panel"></div>
+        <div id="control"></div>
     </div>
 </body>
 
 <script>
     import Vue from 'vue';
     import Map from './js/map'
-    import Panel from './js/panel'
+    import Control from './js/control'
     import Login from './js/login'
     var dgram = require("dgram");
     var host = "115.159.56.102";
@@ -27,11 +29,11 @@
 
     const login = new Vue(Login).$mount('#login');
     const map = new Vue(Map).$mount('#map');
-    const panel = new Vue(Panel).$mount('#panel');
+    const control = new Vue(Control).$mount('#control');
 
     var socket = dgram.createSocket("udp4");
     login.initSocket(socket, host, port);
-    panel.initSocket(socket, host, port);
+    control.initSocket(socket, host, port);
 </script>
 
 </html>

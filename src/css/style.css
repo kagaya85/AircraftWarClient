@@ -1,11 +1,72 @@
 body {
     padding: 0;
     margin: 0;
+    transition: background-color 2s;
+    font-family: "Seto";
 }
 .app {
     margin: 20px auto;
 }
 
+.header {
+    height: 50px;
+    width: 100%;
+    background-color: #515151;
+    color: white;
+    font-size: 25px;
+    padding-left: 10px;
+    line-height: 50px;
+    overflow: hidden;
+}
+
 .panel-container {
     margin-top: 50px;
+}
+
+@font-face {
+    font-family: "Seto";
+    src:url("../font/Seto.woff") format("woff"),
+        /* chrome、firefox */
+        url("../font/Seto.ttf") format("truetype"),
+        /* chrome、firefox、opera、Safari, Android, iOS 4.2+ */
+
+        url("../font/Seto.svg#Seto") format("svg");
+    /* iOS 4.1- */
+    font-style: normal;
+    font-weight: normal;
+}
+
+.btn {
+    display: inline-block;
+    border: 2px solid #515151;
+    font-size: 20px;
+    padding: 10px 16px;
+    margin: 10px;
+    border-radius: 30px;
+    /* 防止文字被选中 */
+    -moz-user-select: -moz-none; 
+    -moz-user-select: none; 
+    -o-user-select:none; 
+    -khtml-user-select:none; 
+    -webkit-user-select:none; 
+    -ms-user-select:none; 
+    user-select:none;
+}
+
+.btn:hover {
+    cursor: pointer;
+    background-color: #515151;
+    color: #ffffff;
+}
+
+.container {
+    position: relative;
+    text-align: center;
+    width: 75%;
+    max-width: 800px;
+    background-color: #ffffff;
+    margin: 40px auto;
+    padding: 40px 40px;
+    border-radius: 20px;
+    box-shadow: 0px 5px 10px #00000020;
 }

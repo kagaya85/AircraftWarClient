@@ -1,5 +1,5 @@
 <template>
-    <div class="map-container">
+    <div class="map-container container" v-show="isStart">
         <!--这里的canvas不能使用css调整大小，会导致绘图尺寸错误-->
         <canvas
             ref="mapLayer"
@@ -28,22 +28,22 @@
 .map-container {
     position: relative;
     height: 500px;
+    min-width: 800px;
 }
 
 .map-container canvas {
     display: block;
     position: absolute;
-    margin: 0px auto;
+    margin: 30px auto;
     left: 0;
     right: 0;
     top: 0;
     bottom: 0;
 }
 
-#mapLayer {
+/* #mapLayer {
     box-shadow: -1px -1px 1px #f3f2f2, 5px 5px 5px #6f6767;
-    /* box-shadow: 5px 5px 5px #6f6767; */
-}
+} */
 </style>
 
 <script>
@@ -56,6 +56,9 @@ export default {
         bus.$on("ready", isReady => {
             this.showEnemy = isReady;
         });
+        bus.$on("start", username => {
+            this.isStart = true;
+        })
     },
     mounted: function() {
         this.init();
@@ -66,7 +69,8 @@ export default {
             gridSize: 50,
             pickedPlane: null,
             offset: { x: 0, y: 0 },
-            showEnemy: false
+            showEnemy: false,
+            isStart: false
         };
     },
     methods: {

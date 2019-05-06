@@ -1,14 +1,12 @@
 <template>
-    <div class="panel-container">
-        <div class="preparation-phase" v-if="!isAction">
-            <button class="rotate-btn" @click="rotate">Rotate</button>
-            <button class="ready-btn" @click="getReady">Ready</button>
+    <div class="panel-container" v-show="isStart">
+        <div class="preparation-phase" v-show="!isAction">
+            <div class="btn" @click="rotate">Rotate</div>
+            <div class="btn" @click="getReady">Ready</div>
         </div>
-        <div class="action-phase" v-else>
+        <div class="action-phase" v-show="isAction">
             <div class="score-board">
-                <span class="round-num"
-                    >战斗开始！！！回合数：{{ roundNum }}</span
-                >
+                <span class="round-num">战斗开始！！！回合数：{{ roundNum }}</span>
             </div>
         </div>
     </div>
@@ -25,15 +23,21 @@
 <script>
 import bus from "./bus";
 export default {
-    name: "panel",
+    name: "control",
     data: function() {
         return {
             roundNum: 0,
             isAction: false,
+            isStart: false,
             socket: null,
             host : null,
             port : null
         };
+    },
+    created: function() {
+        bus.$on("start", username => {
+            this.isStart = true;
+        })
     },
     methods: {
         getReady: function(event) {
