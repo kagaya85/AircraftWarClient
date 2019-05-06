@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, Menu } from 'electron';
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 import { enableLiveReload } from 'electron-compile';
 
@@ -6,15 +6,44 @@ import { enableLiveReload } from 'electron-compile';
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
+let template = [
+  {
+    label:'菜单',
+    submenu: [{
+      label: '最小化',
+      accelerator: 'CmdOrCtrl+M',
+      role: 'minimize'
+    }, {
+      label: '关闭',
+      accelerator: 'CmdOrCtrl+W',
+      role: 'close'
+    }, {
+      type: 'separator'
+    }, {
+      label: '重新打开窗口',
+      accelerator: 'CmdOrCtrl+Shift+T',
+      enabled: false,
+      key: 'reopenMenuItem',
+      click: function () {
+        app.emit('activate')
+      }
+    }]
+  }
+]
+
 const isDevMode = process.execPath.match(/[\\/]electron/);
 
 if (isDevMode) enableLiveReload();
 
 const createWindow = async () => {
   // Create the browser window.
+  let menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
+
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1200,
+    height: 900,
+    autoHideMenuBar : true
   });
 
   // and load the index.html of the app.
