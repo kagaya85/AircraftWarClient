@@ -6,7 +6,7 @@
         </div>
         <div class="action-phase" v-show="isAction">
             <div class="score-board">
-                <span class="round-num">战斗开始！！！回合数：{{ roundNum }}</span>
+                <span class="round-num">Game start！！！Round: {{ roundNum }}</span>
             </div>
         </div>
     </div>
@@ -37,6 +37,7 @@ export default {
     created: function() {
         bus.$on("start", username => {
             this.isStart = true;
+            this.socket.on('message', this.messageHandler);
         })
     },
     methods: {
@@ -52,6 +53,9 @@ export default {
         },
         rotate: function() {
             bus.$emit("rotate");
+        },
+        messageHandler: function(message, remote) {
+
         }
     }
 };
