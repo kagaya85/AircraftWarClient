@@ -119,6 +119,7 @@
 
 <script>
 import bus from "./bus";
+import { setInterval, clearInterval } from 'timers';
 export default {
     name: "login",
     data: function() {
@@ -132,7 +133,9 @@ export default {
             username: "",
             password: "",
             btnLoadingSyle: "",
-            errorMessages: ""
+            errorMessages: "",
+            timer: null,    // 计时器对象
+            count: 0    // 重发计数器
         };
     },
     created: function() {
@@ -188,25 +191,13 @@ export default {
                 'color': "#ffffff"
             }
 
-
             var buf = Buffer.from(`${this.username} ${this.password}`);
-            this.socket.send(buf, this.port, this.host, error => {
-                if (error) {
-                    throw error;
-                } else {
-                    console.log("Message send to " + this.host + ":" + this.port);
-                    // 超时设置
-                    setTimeout(() => {
-                        if(that.isLogin == true) {
-                            // 仍是登陆状态
-                            console.log('Reponse time out.');
-                            that.isBtnLoading = false;
-                            this.btnLoadingSyle = "";
-                            that = null;
-                        }
-                    }, 5000);
-                }
-            });
+            var count = 0;
+            // 每秒发包
+            console.log("begin");
+            this.timer = setInterval(() => {
+                this.sendRequest()
+            }, 1000);
         },
         checkInput: function(){
             // 只检查输入长度
@@ -224,6 +215,39 @@ export default {
                 return false;
             }
             return true;
+        },
+        sendRequest: function(){
+            var that = this;
+            this.socket.send(buf, this.port, this.host, error => {
+                console.log("Send start");
+                if (error) {
+                    throw error;
+                } else {
+                    // 发送成功，等待返回消息
+                    console.log("Message send to " + this.host + ":" + this.port + " try " + count + " time(s)");
+                    // 超时设置
+                    if(that.isLogin == true) {
+                        // 仍是登陆状态
+                        this.count++
+                    }
+                    else {
+                        // 若已经登陆，清除计时器
+                        if(that.timer)
+                            clearInterval(that.timer);  // 清除计时器
+                        that = null;
+                        that.count = null;
+                    }
+                    if(count >= 5){ // 超时
+                        console.log('Reponse time out.');
+                        that.isBtnLoading = false;
+                        that.btnLoadingSyle = "";
+                        if(that.timer)
+                            clearInterval(that.timer);  // 清除计时器
+                        that = null;
+                        count = null;
+                    }
+                }
+            })
         },
         alertMessage: function(message) {
             this.errorMessages = message;

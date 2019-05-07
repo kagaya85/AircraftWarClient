@@ -30,7 +30,7 @@
     const login = new Vue(Login).$mount('#login');
     const map = new Vue(Map).$mount('#map');
     const control = new Vue(Control).$mount('#control');
-
+        
     var socket = dgram.createSocket("udp4");
     login.initSocket(socket, host, port);
     control.initSocket(socket, host, port);
