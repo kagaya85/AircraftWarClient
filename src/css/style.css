@@ -3,6 +3,7 @@ body {
     margin: 0;
     transition: background-color 2s;
     font-family: "Seto";
+    overflow: hidden;
 }
 .app {
     margin: 20px auto;

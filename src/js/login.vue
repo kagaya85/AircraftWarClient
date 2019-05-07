@@ -1,14 +1,17 @@
 <template>
     <div class="login-container" v-show="isLogin">
-        <img class="loading-img" src="img/JJNB.png" alt="" v-show="isLoading" />
+        <img class="loading-img" src="img/JJNB!.png" alt="" v-show="isLoading" />
         <div class="login-form container" v-show="isLogin && !isLoading">
+            <div v-text="errorMessages" class="errorMessages"></div>
             <div class="input-box">
                 <span class="iconfont">&#xe7ae;</span
                 ><input
                     type="text"
+                    ref="username"
                     class="username input-line"
                     placeholder="Username"
                     v-model="username"
+                    :change="inputLimit()"
                 />
             </div>
             <div class="input-box">
@@ -20,8 +23,8 @@
                     v-model="password"
                 />
             </div>
-            <div class="login_btn btn" @click="!isBtnLoading && login()">
-                Login
+            <div ref="login_btn" class="login-btn btn" :style="btnLoadingSyle" @click="!isBtnLoading && login()">
+                {{isBtnLoading ? 'Logining...' : 'Login'}}
             </div>
         </div>
     </div>
@@ -55,8 +58,7 @@
     width: 100%;
     text-align: center;
     align-items: center;
-    /* min-height: 800px; */
-    height: 90vh;
+    height: 80vh;
 }
 
 .loading-img {
@@ -102,6 +104,17 @@
     font-size: 20px;
     padding-left: 10px;
 }
+
+.errorMessages {
+    display: inline-block;
+    height: 30px;
+    width: 300px;
+    overflow: hidden;
+    border-radius: 10px;
+    color: #ff9900;
+    font-size: 20px;
+    padding-left: 10px;
+}
 </style>
 
 <script>
@@ -117,7 +130,9 @@ export default {
             host: null,
             port: null,
             username: "",
-            password: ""
+            password: "",
+            btnLoadingSyle: "",
+            errorMessages: ""
         };
     },
     created: function() {
@@ -139,7 +154,8 @@ export default {
         this.loadContent(function() {
             setTimeout(() => {
                 that.isLoading = false;
-            }, 1000);
+                that = null;
+            }, 2000);
         });
     },
     methods: {
@@ -157,9 +173,21 @@ export default {
             this.socket.on('message', this.messageHandler);
         },
         login: function(event) {
+            var that = this;
+
+            // 检查输入
+            if (this.checkInput()) {
+                console.log(this.username + ' ' + this.password);
+            } else {
+                return;
+            }
+            
             this.isBtnLoading = true;
-            console.log(this.username);
-            console.log(this.password);
+            this.btnLoadingSyle = {
+                'background-color': "#515151",
+                'color': "#ffffff"
+            }
+
 
             var buf = Buffer.from(`${this.username} ${this.password}`);
             this.socket.send(buf, this.port, this.host, error => {
@@ -167,8 +195,46 @@ export default {
                     throw error;
                 } else {
                     console.log("Message send to " + this.host + ":" + this.port);
+                    // 超时设置
+                    setTimeout(() => {
+                        if(that.isLogin == true) {
+                            // 仍是登陆状态
+                            console.log('Reponse time out.');
+                            that.isBtnLoading = false;
+                            this.btnLoadingSyle = "";
+                            that = null;
+                        }
+                    }, 5000);
                 }
             });
+        },
+        checkInput: function(){
+            // 只检查输入长度
+            if(this.username == "") {
+                this.alertMessage("Please input username.");
+                return false;
+            } else if (this.password == "") {
+                this.alertMessage("Please input password.");
+                return false;
+            } else if (this.username.length > 20) {
+                this.alertMessage("Username is too long!");
+                return false;
+            } else if (this.password.length > 20) {
+                this.alertMessage("Password is too long!");
+                return false;
+            }
+            return true;
+        },
+        alertMessage: function(message) {
+            this.errorMessages = message;
+            var that = this;
+            setTimeout(() => {
+                that.errorMessages = "";
+                that = null;
+            }, 1500);
+        },
+        inputLimit: function() {
+            this.username = this.username.replace(/[^\a-\z\A-\Z0-9]/g, '');
         },
         messageHandler: function(message, remote) {
             if (message == `${this.username} ${this.password}`) {
@@ -179,6 +245,7 @@ export default {
             } else {
                 console.log("login failed!!!");
                 this.isBtnLoading = false;
+                this.btnLoadingSyle = "";
             }
         }
     }
