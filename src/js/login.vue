@@ -119,7 +119,10 @@
 
 <script>
 import bus from "./bus";
-import { setInterval, clearInterval } from 'timers';
+import { setInterval, clearInterval, setTimeout } from 'timers';
+
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 export default {
     name: "login",
     data: function() {
@@ -134,8 +137,7 @@ export default {
             password: "",
             btnLoadingSyle: "",
             errorMessages: "",
-            timer: null,    // 计时器对象
-            count: 0    // 重发计数器
+            count: null    // 重发计数器
         };
     },
     created: function() {
@@ -152,21 +154,19 @@ export default {
             bgColorArr[Math.floor(Math.random() * bgColorArr.length)];
     },
     mounted: function() {
-        var that = this;
-
-        this.loadContent(function() {
-            setTimeout(() => {
-                that.isLoading = false;
-                that = null;
-            }, 2000);
-        });
+        this.loadContent();
     },
     methods: {
-        loadContent: function(callback) {
+        loadContent: function() {
             // 在这里判断图片资源是否加载完毕
-            if (typeof callback === "function") {
-                callback();
-            }
+            console.log("before wait");
+            wait(2000).then(() => {
+                console.log("setTimeout callback");
+                this.isLoading = false;
+                this.count = 0;
+            }).catch(err => console.log(err));
+            console.log("after wait");
+
         },
         initSocket: function(socket, host, port) {
             this.socket = socket;
@@ -176,8 +176,6 @@ export default {
             this.socket.on('message', this.messageHandler);
         },
         login: function(event) {
-            var that = this;
-
             // 检查输入
             if (this.checkInput()) {
                 console.log(this.username + ' ' + this.password);
@@ -194,10 +192,8 @@ export default {
             var buf = Buffer.from(`${this.username} ${this.password}`);
             var count = 0;
             // 每秒发包
-            console.log("begin");
-            this.timer = setInterval(() => {
-                this.sendRequest()
-            }, 1000);
+            this.count = 0;
+            this.sendRequest(buf);
         },
         checkInput: function(){
             // 只检查输入长度
@@ -216,38 +212,40 @@ export default {
             }
             return true;
         },
-        sendRequest: function(){
-            var that = this;
-            this.socket.send(buf, this.port, this.host, error => {
+        sendRequest: function(buf){
+            // var that = this;
+            this.socket.send(buf, this.port, this.host, (error) => {
                 console.log("Send start");
+                console.log(this);
                 if (error) {
-                    throw error;
+                    this.isBtnLoading = false;
+                    this.btnLoadingSyle = "";
+                    console.log('error' + error);
                 } else {
-                    // 发送成功，等待返回消息
+                    // 发送成功
                     console.log("Message send to " + this.host + ":" + this.port + " try " + count + " time(s)");
                     // 超时设置
-                    if(that.isLogin == true) {
+                    if(this.isLogin == true) {
                         // 仍是登陆状态
-                        this.count++
+                        this.count += 1
                     }
                     else {
-                        // 若已经登陆，清除计时器
-                        if(that.timer)
-                            clearInterval(that.timer);  // 清除计时器
-                        that = null;
-                        that.count = null;
+                        // 若已经登陆
+                        this.count = 0;
                     }
-                    if(count >= 5){ // 超时
+                    if(that.count <= 0 || count >= 5){ // 超时
                         console.log('Reponse time out.');
-                        that.isBtnLoading = false;
-                        that.btnLoadingSyle = "";
-                        if(that.timer)
-                            clearInterval(that.timer);  // 清除计时器
-                        that = null;
-                        count = null;
+                        this.isBtnLoading = false;
+                        this.btnLoadingSyle = "";
+                        this.count = 0;
+                    }
+                    else {
+                        console.log("Resent");
+                        wait(1000).then(this.sendRequest(buf));
                     }
                 }
             })
+
         },
         alertMessage: function(message) {
             this.errorMessages = message;
