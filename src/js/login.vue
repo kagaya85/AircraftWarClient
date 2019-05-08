@@ -216,12 +216,12 @@ export default {
             // var that = this;
             this.socket.send(buf, this.port, this.host, (error) => {
                 console.log("Send start");
-                console.log(this);
                 if (error) {
                     this.isBtnLoading = false;
                     this.btnLoadingSyle = "";
                     console.log('error' + error);
                 } else {
+                    console.log(this);
                     // 发送成功
                     console.log("Message send to " + this.host + ":" + this.port + " try " + count + " time(s)");
                     // 超时设置
