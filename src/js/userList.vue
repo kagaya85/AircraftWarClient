@@ -3,9 +3,9 @@
         <div class="container">
             <div class="title">Who is Online?</div>
             <ul class="user-list">
-                <li :class="['user-item', selectUser == user ? 'selected' : null]" v-for="(user, index) of userList" :key="index" :username="user" @click="select(user)">
+                <userItem :class="['user-item', selectUser == user ? 'selected' : null]" v-for="(user, index) of userList" :key="index" :username="user" @click="select(user)">
                     {{user}}
-                </li>
+                </userItem>
             </ul>
             <div class="btn" @click="back_btn()" v-show="showBack">Back</div>
             <div class="btn" @click="invite_btn()">Invite</div>
