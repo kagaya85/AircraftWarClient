@@ -1,11 +1,2 @@
-const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+console.log(/^[0-9]*$/.test('1x34'));
 
-var i = 0;
-send = function() {
-    console.log("hello")
-    if (i <= 5)
-        wait(5000).then(send);
-
-    i++;
-}
-send();

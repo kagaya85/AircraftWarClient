@@ -12,6 +12,7 @@
         <b class="title">Aircraft War</b>
     </div>
     <div id="login"></div>
+    <div id="user-list"></div>
     <div class="app">
         <div id="map"></div>
         <div id="control"></div>
@@ -23,17 +24,74 @@
     import Map from './js/map'
     import Control from './js/control'
     import Login from './js/login'
-    var dgram = require("dgram");
-    var host = "119.28.139.244";
-    var port = "1234";
+    import UserList from './js/userList'
 
-    const login = new Vue(Login).$mount('#login');
-    const map = new Vue(Map).$mount('#map');
-    const control = new Vue(Control).$mount('#control');
+    // import { setInterval, clearInterval, setTimeout } from 'timers';
+    const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    const dgram = require("dgram");
+    const Host = "119.28.139.244";
+    const Port = "1234";
+    const UnameLen = 20;
+    const PwLen = 20;
+
+    // 当前阶段
+    const STATUS = {
+        LOGIN: 0,
+        SELECT: 1,
+        READY: 2,
+        BATTLE: 3,
+        SPECIAL: 9
+    };
+    // 请求类型
+    const REQ_TYPE = {
+        LOGIN: 0,
+
+        USER_LST: 1,   // 请求用户列表
+        BATTLE_IVT: 2, // 请求对战
+        HANDLE_IVT: 3,  // 处理邀请
         
+        READY: 4,    // 准备
+        LEAVE: 5,   // 离开
+        SEND_POS: 6, // 发送飞机位置
+
+        CLICK: 7, // 单选
+        LOCATE: 8, // 定位飞机
+        WAIT: 9,    // 等待：空包
+
+        LOGOUT: 10   // 登出
+    };
+    // 服务端事件类型
+    const EVT_TYPE = {
+        LOGIN: 0,   // 登陆结果
+        
+        USER_LST: 1,    // 返回用户列表
+        GET_IVT: 2,     // 对战邀请
+        BATTLE_CHK: 3,  // 对局信息
+
+        READY: 4,   // 准备开始
+        OPPONENT_STA: 5, // 对手状态
+        START: 6,   // 正式开始
+
+        CLICK: 7,   // 单选结果
+        LOCATE: 8,  // 定位飞机结果
+        WAIT: 9,    // 等待
+        OPCLICK: 10, // 对手单点
+        OPLOCATE: 11, // 对手定位飞机
+        OPLEAVE: 12, // 对手离开
+
+        ENFORCE_LGOT: 255   // 强制登出
+    }
+
+    const g_login = new Vue(Login).$mount('#login');
+    const g_userList = new Vue(UserList).$mount('#user-list');
+    const g_map = new Vue(Map).$mount('#map');
+    const g_control = new Vue(Control).$mount('#control');
+    
     var socket = dgram.createSocket("udp4");
-    login.initSocket(socket, host, port);
-    control.initSocket(socket, host, port);
+    g_login.initSocket(socket, Host, Port);
+    g_userList.initSocket(socket, Host, Port);
+    g_control.initSocket(socket, Host, Port);
 </script>
 
 </html>
