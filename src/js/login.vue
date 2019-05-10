@@ -153,6 +153,14 @@ export default {
         ];
         document.body.style.backgroundColor =
             bgColorArr[Math.floor(Math.random() * bgColorArr.length)];
+        
+        bus.$on("logout", username => {
+            this.isLogin = true;
+            this.socket.on('message', this.messageHandler); // 开始监听消息
+            this.isLoading = true;
+            
+            this.loadContent();
+        })
     },
     mounted: function() {
         this.loadContent();
@@ -242,7 +250,8 @@ export default {
                     // 判断是否重设计时器
                     if (this.count <= 0 || this.count >= 5) {
                         // 超时
-                        console.log("Reponse time out.");
+                        if (this.count >= 5)
+                            console.log("Reponse time out.");
                         this.isBtnLoading = false;
                         this.btnLoadingSyle = "";
                         this.count = 0;
@@ -283,7 +292,7 @@ export default {
                 }
             }
             else {  // others
-                console.log(message);
+                console.log(new Date().toLocaleString() + " Message received: " + message[0] + message[1]);
             }
         }
     }

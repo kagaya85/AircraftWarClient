@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain, dialog } from 'electron';
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 import { enableLiveReload } from 'electron-compile';
 
@@ -91,3 +91,39 @@ app.on('activate', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+
+ipcMain.on('open-get-invitation-dialog', function (event, user) {
+  const options = {
+    type: 'info',
+    title: 'Invitation',
+    message: "Your get an invitation from " + user,
+    buttons: ['Reject', 'Accept']
+  }
+  dialog.showMessageBox(options, function (index) {
+    event.sender.send('get-invitation-dialog-selection', index)
+  })
+})
+
+ipcMain.on('open-refused-dialog', function (event, user) {
+  const options = {
+    type: 'info',
+    title: 'Oh no!',
+    message: "Oh no! you are refused!",
+    buttons: ['Ok']
+  }
+  // dialog.showMessageBox(options, function () {
+  //   event.sender.send('refused-dialog-selection')
+  // })
+})
+
+ipcMain.on('open-game-ready-dialog', function () {
+  const options = {
+    type: 'info',
+    title: 'Game ready',
+    message: "Game is ready!",
+    buttons: ['Ok']
+  }
+  // dialog.showMessageBox(options, function () {
+  //   event.sender.send('game-ready-dialog-selection')
+  // })
+})
