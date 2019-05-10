@@ -222,55 +222,57 @@ export default {
         },
         sendRequest: function(buf) {
             // var that = this;
-            this.socket.send(buf, this.port, this.host, error => {
-                if (error) {
-                    this.isBtnLoading = false;
-                    this.btnLoadingSyle = "";
-                    console.log("error" + error);
-                } else {
-                    console.log(
-                        new Date().toLocaleString() +
-                            " Message send to " +
-                            this.host +
-                            ":" +
-                            this.port +
-                            " try " +
-                            this.count +
-                            " time(s)"
-                    );
-                    // 超时设置
-                    if (this.isLogin == true) {
-                        // 仍是登陆状态
-                        this.count += 1;
-                    } else {
-                        // 若已经登陆
-                        this.count = 0;
-                        buf = null;
-                    }
-                    // 判断是否重设计时器
-                    if (this.count <= 0 || this.count >= 5) {
-                        // 超时
-                        if (this.count >= 5) {
-                            console.log("Reponse time out.");
-                            this.alertMessage("Login failed: time out.");
-                        }
+            if(this.isLogin){
+                this.socket.send(buf, this.port, this.host, error => {
+                    if (error) {
                         this.isBtnLoading = false;
                         this.btnLoadingSyle = "";
-                        this.count = 0;
-                        buf = null;
-                    } else if(this.reSentFlag && this.isLogin) {
-                        console.log("Try to resent.");
-                        wait(1000).then(() => {
-                            this.sendRequest(buf);
-                        });
+                        console.log("error" + error);
+                    } else {
+                        console.log(
+                            new Date().toLocaleString() +
+                                " Message send to " +
+                                this.host +
+                                ":" +
+                                this.port +
+                                " try " +
+                                this.count +
+                                " time(s)"
+                        );
+                        // 超时设置
+                        if (this.isLogin == true) {
+                            // 仍是登陆状态
+                            this.count += 1;
+                        } else {
+                            // 若已经登陆
+                            this.count = 0;
+                            buf = null;
+                        }
+                        // 判断是否重设计时器
+                        if (this.count <= 0 || this.count >= 5) {
+                            // 超时
+                            if (this.count >= 5) {
+                                console.log("Reponse time out.");
+                                this.alertMessage("Login failed: time out.");
+                            }
+                            this.isBtnLoading = false;
+                            this.btnLoadingSyle = "";
+                            this.count = 0;
+                            buf = null;
+                        } else if(this.reSentFlag && this.isLogin) {
+                            console.log("Try to resent.");
+                            wait(1000).then(() => {
+                                this.sendRequest(buf);
+                            });
+                        }
                     }
-                }
-            });
+                });
+            }
         },
         alertMessage: function(message) {
             this.errorMessages = message;
             // var that = this;
-            wait(1500).then(() => {
+            wait(2000).then(() => {
                 this.errorMessages = "";
             });
         },
@@ -285,8 +287,8 @@ export default {
                     console.log("Login success!!!");
                     this.isLogin = false;
                     this.socket.removeListener("message", this.messageHandler);
-                //??    bus.$emit("user", this.username);
-                bus.$emit("start", this.username);
+                    bus.$emit("user", this.username);
+                // bus.$emit("start", this.username);
                 } else {
                     this.isBtnLoading = false;
                     this.btnLoadingSyle = "";

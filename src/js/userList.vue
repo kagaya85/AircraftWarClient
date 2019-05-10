@@ -73,7 +73,7 @@ export default {
             showBack: false,
             showNext: false,
             listStart: 0,
-            userList: ['laoyou', 'xiaoyou', 'kagaya', 'hibiki'],
+            userList: [],
             // invitation
             ivtUsername: null,
             // udp
@@ -110,7 +110,7 @@ export default {
         },
         sendRequest: function() {
             // 调用一次后就会循环调用，发送this.reqBuf里的东西
-            if (this.reqBuf) {
+            if (this.reqBuf && this.showUserList) {
                 // reqBuf 不空，则调用send函数
                 this.socket.send(this.reqBuf, this.port, this.host, error => {
                     if (error) {
@@ -124,9 +124,9 @@ export default {
                                 ":" +
                                 this.port +
                                 "STA: " +
-                                buf[0].toString() +
+                                this.reqBuf[0].toString() +
                                 "REQ: " +
-                                buf[1].toString()
+                                this.reqBuf[1].toString()
                         );
                     }   // no error end
                 }); // send end
@@ -181,7 +181,7 @@ export default {
             this.isLoading = true;
         },
         invite_btn: function() {
-            if (this.isLoading)
+            if (this.isLoading || this.selectUser == null)
                 return;
 
             this.sendInvitation(this.selectUser);
@@ -209,7 +209,7 @@ export default {
         },
         messageHandler: function(message, remote) {
             console.log(new Date().toLocaleString() + " Message received: " + message[0] + message[1]);
-            if (message[0] != STATUS.SELECT || this.isLoading == false)  {
+            if (message[0] != STATUS.SELECT)  {
                 // 不是本阶段的包全部忽略 或 未请求
                 return;
             }
@@ -219,7 +219,12 @@ export default {
                     var newList = [];
                     this.totalUserNum = message[3];
                     for(var i = 0; i < getNum; i++) {
-                        newList.push(message.toString('ascii', 4 + i * UnameLen, 4 + (i + 1) * UnameLen));
+                        var offset;
+                        for(offset = 4 + i * UnameLen; offset < 4 + (i + 1) * UnameLen; offset++)
+                            if(message[offset] == 0)
+                                break;
+                        if(offset != 4 + i * UnameLen)
+                            newList.push(message.toString('ascii', 4 + i * UnameLen, offset));
                     }
                     console.log("Get user list: " + newList);
                     this.userList = newList;
@@ -230,6 +235,7 @@ export default {
                     // 弹个窗确认
                     ipcRenderer.send('open-get-invitation-dialog', user);
                     this.ivtUsername = user;
+                    this.getUserList(this.listStart, this.numPerPage); 
                     break;
                 case EVT_TYPE.BATTLE_CHK:   // game ready
                     var roomId = message.toString('ascii', 2);
@@ -255,7 +261,6 @@ export default {
 
             // 已处理完请求
             this.isLoading = false;
-            this.reqBuf = null;
         },
         getInvitationHandler: function(event, index) {
             var result = 0;

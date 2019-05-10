@@ -127,3 +127,15 @@ ipcMain.on('open-game-ready-dialog', function () {
   //   event.sender.send('game-ready-dialog-selection')
   // })
 })
+
+ipcMain.on('open-plane-error-dialog', function () {
+  const options = {
+    type: 'info',
+    title: 'Error',
+    message: "Your aircraft has something wrong!",
+    buttons: ['Ok']
+  }
+  // dialog.showMessageBox(options, function () {
+  //   event.sender.send('game-ready-dialog-selection')
+  // })
+})
