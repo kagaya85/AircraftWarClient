@@ -3,7 +3,7 @@
         <div class="container">
             <div class="title">Hello! {{username}}, Who is Online?</div>
             <ul class="user-list">
-                <userItem :class="['user-item', selectUser == user ? 'selected' : null]" v-for="(user, index) of userList" :key="index" :username="user" @click="select(user)">
+                <userItem :class="['user-item', selectUser == user ? 'selected' : null]" v-for="(user, index) of userList" :key="index" :username="user" @click.native="select(user)">
                     {{user}}
                 </userItem>
             </ul>
@@ -81,7 +81,8 @@ export default {
             port: null,
             host: null,
             reSendFlag: true,   // 重发控制
-            reqBuf: null  // 发送buf
+            reqBuf: null,  // 发送buf
+            reSendCount: 0
         };
     },
     created: function() {
@@ -91,8 +92,8 @@ export default {
             this.socket.on('message', this.messageHandler); // 开始监听消息
             this.listStart = 0;
             this.numPerPage = 5;
-            // this.getUserList(this.listStart, this.numPerPage); 
-            // this.sendRequest();
+            this.getUserList(this.listStart, this.numPerPage); 
+            this.sendRequest();
         })
         ipcRenderer.on('get-invitation-dialog-selection', this.getInvitationHandler);
         // ipcRenderer.on('refused-dialog-selection', this.refusedHandler);
@@ -133,10 +134,13 @@ export default {
 
             // 设置计时器
             if(this.reSendFlag){
+                this.reSendCount++;
                 wait(1000).then(() => {
                     this.sendRequest();
                 });
             }
+            else
+                this.reSendCount = 0;   // 计数器置零
         },
         getUserList: function(start, number) {            
             var buf = new Buffer.alloc(2 + UnameLen + 2);

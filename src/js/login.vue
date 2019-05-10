@@ -250,15 +250,16 @@ export default {
                     // 判断是否重设计时器
                     if (this.count <= 0 || this.count >= 5) {
                         // 超时
-                        if (this.count >= 5)
+                        if (this.count >= 5) {
                             console.log("Reponse time out.");
+                            this.alertMessage("Login failed: time out.");
+                        }
                         this.isBtnLoading = false;
                         this.btnLoadingSyle = "";
                         this.count = 0;
                         buf = null;
                     } else if(this.reSentFlag && this.isLogin) {
                         console.log("Try to resent.");
-                        // setTimeout(this.sendRequest, 1000, buf);
                         wait(1000).then(() => {
                             this.sendRequest(buf);
                         });
@@ -279,16 +280,17 @@ export default {
         messageHandler: function(message, remote) {
             this.reSentFlag = false;
             if (message[0] == STATUS.LOGIN && message[1] == EVT_TYPE.LOGIN) {
-                // if (message[2] == 1) {
-                if (true) {
+                if (message[2] == 1) {
+                // if (true) {
                     console.log("Login success!!!");
                     this.isLogin = false;
                     this.socket.removeListener("message", this.messageHandler);
-                    bus.$emit("user", this.username);
+                //??    bus.$emit("user", this.username);
+                bus.$emit("start", this.username);
                 } else {
                     this.isBtnLoading = false;
                     this.btnLoadingSyle = "";
-                    this.alertMessage("Login failed " + message.toString('ascii', 3));
+                    this.alertMessage("Login failed: " + message.toString('ascii', 3));
                 }
             }
             else {  // others

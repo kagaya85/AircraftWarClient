@@ -1,5 +1,5 @@
 <template>
-    <div class="map-container container" v-show="isStart">
+    <div class="map-container container" v-show="showMap">
         <!--这里的canvas不能使用css调整大小，会导致绘图尺寸错误-->
         <canvas
             ref="mapLayer"
@@ -13,6 +13,9 @@
             width="800px"
             height="500px"
             v-show="!showEnemy"
+            @mousedown="mouseDownHandler"
+            @mousemove="mouseMoveHandler"
+            @mouseup="mouseUpHandler"
         ></canvas>
         <canvas
             ref="enemyLayer"
@@ -20,6 +23,7 @@
             v-if="showEnemy"
             width="800px"
             height="500px"
+            @mousedown="mouseClickHandler"
         ></canvas>
     </div>
 </template>
@@ -52,13 +56,15 @@ export default {
     name: "map",
     created: function() {
         // panel事件处理
-        bus.$on("rotate", this.rotateHandler);
-        bus.$on("ready", isReady => {
-            this.showEnemy = isReady;
+        bus.$on('rotate', this.rotateHandler);
+        bus.$on('read', this.sendPlanePos);
+        bus.$on('ready-to-start', () => {
+            this.showEnemy = true;
         });
-        bus.$on("start", username => {
-            this.isStart = true;
+        bus.$on('start', username => {
+            this.showMap = true;
         })
+        bus.$on('fill', this.fillGrid);
     },
     mounted: function() {
         this.init();
@@ -70,7 +76,7 @@ export default {
             pickedPlane: null,
             offset: { x: 0, y: 0 },
             showEnemy: false,
-            isStart: false
+            showMap: false,
         };
     },
     methods: {
@@ -89,18 +95,10 @@ export default {
                 this.planes.push(p);
                 this.drawPlane(p);
             }
-            var canvas = this.$refs.planeLayer;
-            canvas.addEventListener("mousedown", this.mouseDownHandler);
-            canvas.addEventListener("mousemove", this.mouseMoveHandler);
-            canvas.addEventListener("mouseup", this.mouseUpHandler);
-        },
-        repaintPlane: function() {
-            var canvas = this.$refs.planeLayer;
-            var ctx = canvas.getContext("2d");
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (var i = 0; i < this.planes.length; i++) {
-                this.drawPlane(this.planes[i]);
-            }
+            // var canvas = this.$refs.planeLayer;
+            // canvas.addEventListener("mousedown", this.mouseDownHandler);
+            // canvas.addEventListener("mousemove", this.mouseMoveHandler);
+            // canvas.addEventListener("mouseup", this.mouseUpHandler);
         },
         mouseDownHandler: function(e) {
             var canvas = this.$refs.planeLayer;
@@ -110,7 +108,6 @@ export default {
             };
             var picked = -1;
             var flag = false;
-            console.log(mouse.x, mouse.y);
             // 判断点击的图形，获取该对象，并放置在栈顶
             // 从最上面的图形开始判断
             for (var i = this.planes.length - 1; i >= 0; i--) {
@@ -376,6 +373,72 @@ export default {
 
             this.pickedPlane = null;
         },
+        // 用于游戏阶段点击对手棋盘的格子
+        mouseClickHandler: function(e){
+            var canvas = this.$refs.enemyLayer;
+            var mouse = {
+                x: e.clientX - canvas.getBoundingClientRect().left,
+                y: e.clientY - canvas.getBoundingClientRect().top
+            };
+
+            var [x, y] = this.posTransform(mouse.x, mouse.y);
+
+            bus.$emit('click', x, y);
+        },
+        // 将鼠标点击坐标返回为棋盘位置坐标，不合法返回[-1，-1]
+        posTransform: function(posX, posY) {
+            var x = Math.floor(posX / this.gridSize);
+            var y = Math.floor(posY / this.gridSize);
+            
+            if(x < 0 || x > 9 || y < 0 || y > 9) {
+                return [-1, -1];
+            }
+
+            return [x, y];
+        },
+        sendPlanePos: function() {
+            var planes = [];
+
+            for(var i = 0; i < this.planes.length; i++) {
+                let [x, y] = this.posTransform(this.planes[i].posX, this.planes[i].posY);
+                planes.push([x, y, this.planes[i].direct]);
+            }
+
+            bus.$emit('plane-pos', planes);
+        },
+        // 绘图
+        repaintPlane: function() {
+            var canvas = this.$refs.planeLayer;
+            var ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (var i = 0; i < this.planes.length; i++) {
+                this.drawPlane(this.planes[i]);
+            }
+        },
+        fillGrid: function(x, y, type){
+            var canvas = this.$refs.enemyLayer;
+            var ctx = canvas.getContext("2d");
+            var size = this.gridSize;
+            
+            if(type == 'head') { // 机头
+                var color = '#CC0099';
+            }
+            else if(type == 'none') { // 空
+                var color = '#909399'
+            }
+            else if(type == 'body'){ // 机身
+                var color = "#F56C6C";
+            }
+            else {
+                var color = '#FFFFFF'
+            }
+
+            ctx.strokeStyle = color; //"#D6D1D1"
+            ctx.rect(x * this.gridSize + 1, y * this.gridSize + 1, this.gridSize - 2, this.gridSize - 2);
+            ctx.stroke();
+            ctx.fillStyle = color;
+            ctx.fill();
+        },
         drawBoard: function() {
             var canvas = this.$refs.mapLayer;
             var ctx = canvas.getContext("2d");
@@ -498,11 +561,44 @@ export default {
             }
             this.repaintPlane();
         },
+        // 飞机对象
         Plane: function(x, y, direct, color) {
             this.posX = x;
             this.posY = y;
             this.direct = direct; // left right up down
             this.color = color;
+        },
+        // 通信相关
+        sendRequest: function() {
+            // 调用一次后就会循环调用，发送this.reqBuf里的东西
+            if (this.reqBuf) {
+                // reqBuf 不空，则调用send函数
+                this.socket.send(this.reqBuf, this.port, this.host, error => {
+                    if (error) {
+                        console.log("error" + error);
+                    } else {
+                        // no error
+                        console.log(
+                            new Date().toLocaleString() +
+                                " Message send to " +
+                                this.host +
+                                ":" +
+                                this.port +
+                                "STA: " +
+                                buf[0].toString() +
+                                "REQ: " +
+                                buf[1].toString()
+                        );
+                    }   // no error end
+                }); // send end
+            }
+
+            // 设置计时器
+            if(this.reSendFlag){
+                wait(1000).then(() => {
+                    this.sendRequest();
+                });
+            }
         }
     }
 };
