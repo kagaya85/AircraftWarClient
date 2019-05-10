@@ -104,7 +104,7 @@ ipcMain.on('open-get-invitation-dialog', function (event, user) {
   })
 })
 
-ipcMain.on('open-refused-dialog', function (event, user) {
+ipcMain.on('open-refused-dialog', function (event) {
   const options = {
     type: 'info',
     title: 'Oh no!',
@@ -116,7 +116,7 @@ ipcMain.on('open-refused-dialog', function (event, user) {
   // })
 })
 
-ipcMain.on('open-game-ready-dialog', function () {
+ipcMain.on('open-game-ready-dialog', function (event) {
   const options = {
     type: 'info',
     title: 'Game ready',
@@ -128,7 +128,7 @@ ipcMain.on('open-game-ready-dialog', function () {
   // })
 })
 
-ipcMain.on('open-plane-error-dialog', function () {
+ipcMain.on('open-plane-error-dialog', function (event) {
   const options = {
     type: 'info',
     title: 'Error',

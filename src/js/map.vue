@@ -85,6 +85,22 @@ export default {
             this.showMap = true;
         })
         bus.$on('fill', this.fillGrid);
+        bus.$on('fillPlane', (x, y, direct, isEnemy = true) => {
+            var [posX, posY] = [x * this.gridSize, (y + 1) * this.gridSize];
+            var p;
+            if(isEnemy)
+                p = new this.Plane(posX, posY, direct,'#F56C6C', 0)
+            else {
+                this.planes.forEach((plane, index)=>{
+                    if(plane.posX == posX && plane.posY == posY) {
+                        p = plane;
+                    }
+                });
+                p.color = '#F56C6C';
+            }            
+
+            this.drawPlane(p);
+        })
     },
     mounted: function() {
         this.init();
@@ -522,7 +538,10 @@ export default {
             else if(type == 'body'){ // 机身
                 var color = "#F56C6C";
             }
-            else {  // clicked
+            else if(type == 'clicked'){  // clicked
+                var color = '#000000'
+            }
+            else{  // blank
                 var color = '#FFFFFF'
             }
 

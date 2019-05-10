@@ -65,6 +65,11 @@ export default {
             username: null,
             showUserList: false,
             isLoading: false,
+            
+            status: STATUS.SELECT,   // 当前状态
+            request: REQ_TYPE.USER_LST, // 当前请求
+            waitfor: EVT_TYPE.USER_LST, // 期待回复
+
             // list
             selectUser: null,
             numPerPage: 5,  //每页用户显示个数
@@ -76,6 +81,7 @@ export default {
             userList: [],
             // invitation
             ivtUsername: null,
+            isInvited: false,
             // udp
             socket: null,
             port: null,
@@ -145,6 +151,9 @@ export default {
         getUserList: function(start, number) {            
             var buf = new Buffer.alloc(2 + UnameLen + 2);
             
+            this.request = REQ_TYPE.USER_LST;                     
+            this.waitfor = EVT_TYPE.USER_LST;            
+            
             buf[0] = STATUS.SELECT;
             buf[1] = REQ_TYPE.USER_LST;
             buf.write(this.username, 2, 'ascii');
@@ -154,13 +163,18 @@ export default {
             this.reqBuf = buf;
         },
         sendInvitation: function(targetUser) {
-            var buf = new Buffer.alloc(2 + UnameLen);
+            var buf = new Buffer.alloc(2 + UnameLen * 2);
             
+            this.request = REQ_TYPE.BATTLE_IVT;            
+            this.waitfor = EVT_TYPE.BATTLE_CHK;
+
             buf[0] = STATUS.SELECT;
             buf[1] = REQ_TYPE.BATTLE_IVT;
-            buf.write(targetUser, 2, 'ascii');
+            buf.write(this.username, 2, 'ascii');
+            buf.write(targetUser, 22, 'ascii');
         
             this.reqBuf = buf;
+            this.isInvited = true;
         },
         back_btn: function() {
             if (this.isLoading || this.pageNum <= 0) {
@@ -209,8 +223,8 @@ export default {
         },
         messageHandler: function(message, remote) {
             console.log(new Date().toLocaleString() + " Message received: " + message[0] + message[1]);
-            if (message[0] != STATUS.SELECT)  {
-                // 不是本阶段的包全部忽略 或 未请求
+            if (message[1] != EVT_TYPE.ENFORCE_LGOT && message[0] != STATUS.SELECT)  {
+                // 不是本阶段的包全部忽略
                 return;
             }
             switch(message[1]) {
@@ -228,8 +242,14 @@ export default {
                     }
                     console.log("Get user list: " + newList);
                     this.userList = newList;
+                    // 已处理完请求
+                    this.isLoading = false;
                     break;
                 case EVT_TYPE.GET_IVT: // handle invitation
+                    if(this.isInvited)  // 不能重复邀请
+                        break;
+
+                    this.isInvited = true;
                     var user = message.toString('ascii', 2);
                     console.log("Get invitation form " + user);
                     // 弹个窗确认
@@ -243,6 +263,8 @@ export default {
                     if(!/^[0-9]*$/.test(roomId)) {
                         // 含非数字，按对手拒绝处理
                         console.log("Target user refused");
+                        this.selectUser = null;
+                        this.isInvited = false;
                         // 继续拉取用户列表
                         this.getUserList(this.listStart, this.numPerPage); 
                         // 弹个窗
@@ -252,19 +274,32 @@ export default {
                         ipcRenderer.send('open-game-ready-dialog');
                         this.gameReady(roomId);
                     }
+                    // 已处理完请求
+                    this.isLoading = false;
                     break;
                 case EVT_TYPE.WAIT: // wait
+                    if(this.request == REQ_TYPE.LOGOUT){
+                        console.log("logout!!!");
+                        this.reSendFlag = false;
+                        this.reqBuf = null;
+                        this.showUserList = false;
+                        this.socket.removeListener("message", this.messageHandler);
+                        bus.$emit("logout");
+                    }
+                    this.getUserList(this.listStart, this.numPerPage);
+                    break;
+                case EVT_TYPE.ENFORCE_LGOT:
+                    console.log("Enforce logout");
+                    logout_btn();
                     break;
                 default:
                     return;
             }
-
-            // 已处理完请求
-            this.isLoading = false;
         },
         getInvitationHandler: function(event, index) {
+            // 窗体返回邀请处理结果
             var result = 0;
-            if (index === 1){
+            if (index == 1){
                 // Accept
                 result = 1;
             }
@@ -272,6 +307,8 @@ export default {
                 // Recject
                 result = 0;
             }
+            this.request = REQ_TYPE.HANDLE_IVT;
+            this.waitfor = EVT_TYPE.BATTLE_CHK;
 
             var buf = new Buffer.alloc(2 + UnameLen * 2 + 1);
             buf[0] = STATUS.SELECT;
@@ -290,13 +327,16 @@ export default {
         //     // 开始游戏，弹窗确认
         //     // do nothing
         // },
-        logout_btn: function() {
-            console.log("logout!!!");
-            this.reSendFlag = false;
-            this.reqBuf = null;
-            this.showUserList = false;
-            this.socket.removeListener("message", this.messageHandler);
-            bus.$emit("logout");
+        logout_btn: function() {            
+            var buf = new Buffer.alloc(2 + UnameLen + 1);
+            this.request = REQ_TYPE.LOGOUT;
+            this.waitfor = EVT_TYPE.WAIT;
+
+            buf[0] = STATUS.SPECIAL;
+            buf[1] = REQ_TYPE.LOGOUT;
+            buf.write(this.username, 2, 20, 'ascii');
+        
+            this.reqBuf = buf;
         },
         // 进入游戏准备阶段
         gameReady: function(roomId) {

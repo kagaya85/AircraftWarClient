@@ -222,7 +222,7 @@ export default {
         },
         sendRequest: function(buf) {
             // var that = this;
-            if(this.isLogin){
+            if(this.isLogin && this.reSentFlag){
                 this.socket.send(buf, this.port, this.host, error => {
                     if (error) {
                         this.isBtnLoading = false;
@@ -281,6 +281,7 @@ export default {
         },
         messageHandler: function(message, remote) {
             this.reSentFlag = false;
+            console.log(new Date().toLocaleString() + " Message received: " + message[0] + message[1]);
             if (message[0] == STATUS.LOGIN && message[1] == EVT_TYPE.LOGIN) {
                 if (message[2] == 1) {
                 // if (true) {
