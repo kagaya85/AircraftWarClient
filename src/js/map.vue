@@ -97,8 +97,13 @@ export default {
             this.showMap = true;
             this.enemyOps = [];
         })
-        bus.$on('fill', this.fillGrid);
-        bus.$on('fill-plane', this.fillPlane);
+        bus.$on('fill', (x, y, type, isEnemy) => { 
+            this.enemyOps.push([x, y, type, isEnemy]);
+            this.fillGrid();
+        bus.$on('fill-plane', () => {
+            this.enemyOps.push([x, y, direct, isEnemy]);            
+            this.fillPlane()
+            });
     },
     mounted: function() {
         this.init();
@@ -547,8 +552,6 @@ export default {
                 var color = '#FFFFFF'
             }
             
-            this.enemyOps.push([x, y, type, color]);
-
             ctx.strokeStyle = color; //"#D6D1D1"
             ctx.beginPath();
             ctx.rect(x * this.gridSize + 1, y * this.gridSize + 1, this.gridSize - 2, this.gridSize - 2);
@@ -563,7 +566,6 @@ export default {
             var p;
             if(isEnemy) {
                 p = new this.Plane(posX, posY, direct,'#F56C6C', 0)
-                this.enemyOps.push([posX, posY, direct,'#F56C6C']);
             } else {
                 this.planes.forEach((plane, index)=>{
                     if(plane.posX == posX && plane.posY == posY) {

@@ -156,6 +156,7 @@ export default {
                     if(message[2] == 0){    // 猜错，恢复点击过的地方
                         bus.$emit('fill', this.clickPos.x, this.clickPos.y, 'blank');
                         bus.$emit('fill', this.clickPos2.x, this.clickPos2.y, 'blank');                    
+                        this.isUserTurn = false;
                         bus.$emit("show-user");
                     }
                     else if(message[2] == 1){ // 猜对
