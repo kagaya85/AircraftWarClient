@@ -4,6 +4,7 @@
             <div v-show="isEnemyReady">Your opponent is ready</div>
             <div class="btn" @click="rotate_btn">Rotate</div>
             <div :class="['btn', isReady ? 'selected' : null]" @click="ready_btn">Ready</div>
+            <div class="btn" @click="leave">Leave</div>
         </div>
         <div class="action-phase" v-show="isBattle">
             <div class="score-board">
