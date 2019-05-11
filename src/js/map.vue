@@ -63,7 +63,9 @@ export default {
             originalPos: { x: 0, y: 0 },
             showEnemy: false,
             showMap: false,
-            isBattle: false // 对战阶段屏蔽用户对自己棋盘的操作
+            isBattle: false, // 对战阶段屏蔽用户对自己棋盘的操作
+
+            enemyOps: [] // 保存对手操作  [2]为null表示画飞机
         };
     },
     created: function() {
@@ -78,6 +80,14 @@ export default {
         bus.$on('show-enemy', () => {
             console.log('show-enemy');
             this.showEnemy = true;
+
+            for(var i = 0; i < this.enemyOps.length; i++) {
+                if(this.enemyOps[i][2] == 'up' || this.enemyOps[i][2] == 'down' || this.enemyOps[i][2] == 'left' || this.enemyOps[i][2] == 'right') {
+                    this.fillPlane(this.enemyOps[i][0], this.enemyOps[i][1], this.enemyOps[i][2], true);
+                } else {
+                    this.fillGrid(this.enemyOps[i][0], this.enemyOps[i][1], this.enemyOps[i][2], true);
+                }
+            }
         });
         bus.$on('show-user', () => {
             console.log('show-user');
@@ -85,25 +95,10 @@ export default {
         });
         bus.$on('start', username => {
             this.showMap = true;
+            this.enemyOps = [];
         })
         bus.$on('fill', this.fillGrid);
-        bus.$on('fill-plane', (x, y, direct, isEnemy = true) => {
-            console.log('fill-plane');
-            var [posX, posY] = [x * this.gridSize, (y + 1) * this.gridSize];
-            var p;
-            if(isEnemy)
-                p = new this.Plane(posX, posY, direct,'#F56C6C', 0)
-            else {
-                this.planes.forEach((plane, index)=>{
-                    if(plane.posX == posX && plane.posY == posY) {
-                        p = plane;
-                    }
-                });
-                p.color = '#F56C6C';
-            }            
-
-            this.drawPlane(p, isEnemy);
-        })
+        bus.$on('fill-plane', this.fillPlane);
     },
     mounted: function() {
         this.init();
@@ -527,7 +522,7 @@ export default {
         },
         fillGrid: function(x, y, type, isEnemy = true){
             console.log('fill');
-            
+
             if(isEnemy)
                 var canvas = this.$refs.enemyLayer;
             else
@@ -551,6 +546,8 @@ export default {
             else{  // blank
                 var color = '#FFFFFF'
             }
+            
+            this.enemyOps.push([x, y, type, color]);
 
             ctx.strokeStyle = color; //"#D6D1D1"
             ctx.beginPath();
@@ -559,6 +556,24 @@ export default {
             // ctx.stroke();
             ctx.fillStyle = color;
             ctx.fill();
+        },
+        fillPlane: function(x, y, direct, isEnemy = true){
+            console.log('fill-plane');
+            var [posX, posY] = [x * this.gridSize, (y + 1) * this.gridSize];
+            var p;
+            if(isEnemy) {
+                p = new this.Plane(posX, posY, direct,'#F56C6C', 0)
+                this.enemyOps.push([posX, posY, direct,'#F56C6C']);
+            } else {
+                this.planes.forEach((plane, index)=>{
+                    if(plane.posX == posX && plane.posY == posY) {
+                        p = plane;
+                    }
+                });
+                p.color = '#F56C6C';
+            }            
+
+            this.drawPlane(p, isEnemy);
         },
         drawBoard: function() {
             var canvas = this.$refs.mapLayer;

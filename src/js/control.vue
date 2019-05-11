@@ -156,6 +156,7 @@ export default {
                     if(message[2] == 0){    // 猜错，恢复点击过的地方
                         bus.$emit('fill', this.clickPos.x, this.clickPos.y, 'blank');
                         bus.$emit('fill', this.clickPos2.x, this.clickPos2.y, 'blank');                    
+                        bus.$emit("show-user");
                     }
                     else if(message[2] == 1){ // 猜对
                         if(this.clickPos2.x == this.clickPos.x) {
@@ -183,10 +184,9 @@ export default {
                             bus.$emit("show-user");
                             });
                         }
-                    
+                    }
                     this.sendWait();
                     break;
-                }
                 case EVT_TYPE.OPCLICK:{  // 对手点击
                     let [x, y] = [message[2], message[3]];
                     if(message[4] == 1)
@@ -221,7 +221,7 @@ export default {
                     } else {
                         wait(1000).then(() => {
                             this.isUserTurn = true;
-                            bus.$emit("show-enmey");
+                            bus.$emit("show-enemy");
                             });
                     }
 
