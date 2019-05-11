@@ -102,7 +102,7 @@ export default {
                 p.color = '#F56C6C';
             }            
 
-            this.drawPlane(p);
+            this.drawPlane(p, isEnemy);
         })
     },
     mounted: function() {
@@ -577,8 +577,11 @@ export default {
                 ctx.stroke();
             }
         },
-        drawPlane: function(plane) {
-            var canvas = this.$refs.planeLayer;
+        drawPlane: function(plane, isEnemy = false) {
+            if(isEnemy)
+                var canvas = this.$refs.enemyLayer;
+            else
+                var canvas = this.$refs.planeLayer;
             var ctx = canvas.getContext("2d");
             var [sx, sy] = [plane.posX, plane.posY];
             var size = this.gridSize;

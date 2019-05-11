@@ -12,6 +12,7 @@
                 </div>
                 <span class="info" v-show="!isEnd">Game start！！！{{ isUserTurn ? 'Your turn' : 'Not your turn'}}</span>
                 <span class="info" v-show="isEnd">Game end！！！{{ gameResult }}</span>
+                <div class="btn" v-show="isEnd" @click="backToReady">GoBack</div>
             </div>
         </div>
     </div>
@@ -156,14 +157,14 @@ export default {
                         bus.$emit('fill', this.clickPos2.x, this.clickPos2.y, 'blank');                    
                     }
                     else if(message[2] == 1){ // 猜对
-                        if(clickPos2.x == clickPos.x) {
-                            if(clickPos2.y > clickPos.y)
+                        if(this.clickPos2.x == this.clickPos.x) {
+                            if(this.clickPos2.y > this.clickPos.y)
                                 direct = 'up';
                             else
                                 direct = 'down';
                         }
                         else {
-                            if(clickPos2.x > clickPos.x)
+                            if(this.clickPos2.x > this.clickPos.x)
                                 direct = 'left';
                             else
                                 direct = 'right';
@@ -175,14 +176,16 @@ export default {
                             // 游戏结束 win
                             this.isEnd = true;
                             this.gameResult = "You Win!"
+                        } else {
+                            wait(1000).then(() => {
+                            this.isUserTurn = false;
+                            bus.$emit("show-user");
+                            });
                         }
-                    }
+                    
                     this.sendWait();
-                    wait(1000).then(() => {
-                        this.isUserTurn = false;
-                        bus.$emit("show-user");
-                        });
                     break;
+                }
                 case EVT_TYPE.OPCLICK:{  // 对手点击
                     let [x, y] = [message[2], message[3]];
                     if(message[4] == 1)
@@ -200,7 +203,7 @@ export default {
                 }
                 case EVT_TYPE.OPLOCATE: {   // 对手定位飞机
                     let [x, y] = [message[2], message[3]];
-                    if (message[4] == 1){
+                    if (message[6] == 1){
                         // 对手猜中
                         bus.$emit('fillPlane', x, y, null, false);
                     }
@@ -208,11 +211,20 @@ export default {
                         // 对手猜错
                         console.log("enemy locate fail");
                     }
-                    
-                    wait(1000).then(() => {
-                        this.isUserTurn = true;
-                        bus.$emit("show-enmey");
-                        });
+                
+                    // 判断游戏是否继续
+                    if(message[7] == 1) {
+                        // 游戏结束 win
+                        this.isEnd = true;
+                        this.gameResult = "You Lose!"
+                    } else {
+                        wait(1000).then(() => {
+                            this.isUserTurn = true;
+                            bus.$emit("show-enmey");
+                            });
+                    }
+
+                    this.sendWait();
                     break;
                 }
                 // special
@@ -416,6 +428,17 @@ export default {
             this.isEnd =false;
             this.socket.removeListener("message", this.messageHandler);
             bus.$emit("user");
+        },
+        backToReady: function(){
+            // 回到准备阶段
+            this.reSendFlag = false;
+            this.reqBuf = null;
+            this.isBattle = false;
+            this.isReady = false;
+            this.isEnd = false;
+            this.status = STATUS.READY;
+
+            this.sendUserStatus();
         }
     }
 };
