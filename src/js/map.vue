@@ -76,16 +76,18 @@ export default {
             this.isBattle = false;
         });
         bus.$on('show-enemy', () => {
+            console.log('show-enemy');
             this.showEnemy = true;
         });
         bus.$on('show-user', () => {
+            console.log('show-user');
             this.showEnemy = false;
         });
         bus.$on('start', username => {
             this.showMap = true;
         })
         bus.$on('fill', this.fillGrid);
-        bus.$on('fillPlane', (x, y, direct, isEnemy = true) => {
+        bus.$on('fill-plane', (x, y, direct, isEnemy = true) => {
             var [posX, posY] = [x * this.gridSize, (y + 1) * this.gridSize];
             var p;
             if(isEnemy)
@@ -408,6 +410,8 @@ export default {
 
             this.repaintPlane();
             let [x, y] = this.posTransform(this.pickedPlane.posX, this.pickedPlane.posY);
+            y -= 1;
+
             if(x >= 0 && y >= 0)  // 位置合法
                 bus.$emit('plane-pos', [this.pickedPlane.no, x, y, this.pickedPlane.direct]); // 更新一下控制模块的飞机位置
             else    // 位置不合法
@@ -421,6 +425,7 @@ export default {
 
             for(var i = 0; i < this.planes.length; i++) {
                 let [x, y] = this.posTransform(this.planes[i].posX, this.planes[i].posY);
+                y -= 1;     // 飞机坐标用左下角坐标代替
                 if(x!=-1 && y!=-1)
                     planes.push([x, y, this.planes[i].direct]);
             }
@@ -497,13 +502,12 @@ export default {
             };
 
             var [x, y] = this.posTransform(mouse.x, mouse.y);
-
             bus.$emit('click', x, y);
         },
         // 将鼠标点击坐标返回为棋盘位置坐标，不合法返回[-1，-1]
         posTransform: function(posX, posY) {
             var x = Math.floor(posX / this.gridSize);
-            var y = Math.floor(posY / this.gridSize) - 1;   // 飞机坐标用机头左下角方格坐标代替，导致y坐标从1开始
+            var y = Math.floor(posY / this.gridSize);
             
             if(x < 0 || x > 9 || y < 0 || y > 9) {
                 return [-1, -1];
@@ -676,6 +680,8 @@ export default {
             this.repaintPlane();
             
             let [x, y] = this.posTransform(picked.posX, picked.posY);
+            y -= 1;     // 飞机坐标用左下角坐标代替
+            
             if(x >= 0 && y >= 0)  // 位置合法
                 bus.$emit('plane-pos', [picked.no, x, y, picked.direct]); // 更新一下控制模块的飞机位置
             else    // 位置不合法

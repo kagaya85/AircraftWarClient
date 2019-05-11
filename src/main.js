@@ -111,9 +111,7 @@ ipcMain.on('open-refused-dialog', function (event) {
     message: "Oh no! you are refused!",
     buttons: ['Ok']
   }
-  // dialog.showMessageBox(options, function () {
-  //   event.sender.send('refused-dialog-selection')
-  // })
+  dialog.showMessageBox(options, null)
 })
 
 ipcMain.on('open-game-ready-dialog', function (event) {
@@ -123,9 +121,7 @@ ipcMain.on('open-game-ready-dialog', function (event) {
     message: "Game is ready!",
     buttons: ['Ok']
   }
-  // dialog.showMessageBox(options, function () {
-  //   event.sender.send('game-ready-dialog-selection')
-  // })
+  dialog.showMessageBox(options, null)
 })
 
 ipcMain.on('open-plane-error-dialog', function (event) {
@@ -135,7 +131,5 @@ ipcMain.on('open-plane-error-dialog', function (event) {
     message: "Your aircraft has something wrong!",
     buttons: ['Ok']
   }
-  // dialog.showMessageBox(options, function () {
-  //   event.sender.send('game-ready-dialog-selection')
-  // })
+  dialog.showMessageBox(options, null)
 })

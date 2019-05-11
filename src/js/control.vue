@@ -143,8 +143,10 @@ export default {
                     else if(message[2] == 3)
                         bus.$emit('fill', this.clickPos.x, this.clickPos.y, 'head');
                     
+                    this.sendWait();
                     wait(1000).then(() => {
-                        bus.$emit("show-user")
+                        this.isUserTurn = false;
+                        bus.$emit("show-user");
                         });
                     break;
                 case EVT_TYPE.LOCATE:   // 定位飞机结果
@@ -166,7 +168,7 @@ export default {
                             else
                                 direct = 'right';
                         }
-                        bus.$emit('fillPlane', this.clickPos.x, this.clickPos.y, direct);
+                        bus.$emit('fill-plane', this.clickPos.x, this.clickPos.y, direct);
                         
                         // 判断游戏是否继续
                         if(message[3] == 1) {
@@ -175,7 +177,9 @@ export default {
                             this.gameResult = "You Win!"
                         }
                     }
+                    this.sendWait();
                     wait(1000).then(() => {
+                        this.isUserTurn = false;
                         bus.$emit("show-user")
                         });
                     break;
@@ -188,14 +192,13 @@ export default {
                     else if(message[4] == 3)
                         bus.$emit('fill', x, y, 'head', false);
                     
-                    this.isUserTurn = true;
-                    this.isLocate = false;
                     wait(1000).then(() => {
-                        bus.$emit("show-enmey")}
-                        );
+                        this.isUserTurn = true;
+                        bus.$emit("show-enmey");
+                        });
                     break;
                 }
-                case EVT_TYPE.LOCATE: {   // 对手定位飞机
+                case EVT_TYPE.OPLOCATE: {   // 对手定位飞机
                     let [x, y] = [message[2], message[3]];
                     if (message[4] == 1){
                         // 对手猜中
@@ -203,12 +206,11 @@ export default {
                     }
                     else {
                         // 对手猜错
-                        console.log("对手猜飞机猜错");
+                        console.log("enemy locate fail");
                     }
                     
-                    this.isUserTurn = true;
-                    this.isLocate = false;
                     wait(1000).then(() => {
+                        this.isUserTurn = true;
                         bus.$emit("show-enmey")
                         });
                     break;
@@ -328,6 +330,7 @@ export default {
                     this.reqBuf = buf;
                     this.locateClickCount = 0;
                     this.isUserTurn = false;
+                    this.isLocate = false;
                 }
             }
         },
