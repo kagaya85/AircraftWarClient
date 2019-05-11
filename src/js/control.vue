@@ -23,6 +23,11 @@
     text-align: center;
     clear: both;
 }
+
+.selected {
+    background-color: #515151;
+    color: #ffffff;
+}
 </style>
 
 <style scoped src="../css/button.css">
@@ -113,6 +118,8 @@ export default {
                     this.isEnemyReady = message[2];
                     break;
                 case EVT_TYPE.READY:    // 准备开始，发送飞机位置
+                    if(!this.planes[0] || !this.planes[0] || !this.planes[0]) 
+                        return;
                     this.sendPlanePos();
                     break;
                 case EVT_TYPE.START:    // 正式开始
@@ -197,6 +204,7 @@ export default {
                 }
                 // special
                 case EVT_TYPE.OPLEAVE:  // 对手离开，退出房间
+                    this.isBattle = true;
                     this.isEnd = true;
                     this.gameResult = "Enemy leaved, You Win!"
                     break;

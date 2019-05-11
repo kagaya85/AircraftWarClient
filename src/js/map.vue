@@ -174,24 +174,24 @@ export default {
                         break;
                     case "right":
                         if (
-                            mouse.x < p.posX &&
-                            mouse.x > p.posX - 4 * gridSize &&
+                            mouse.x < p.posX + gridSize &&
+                            mouse.x > p.posX - 3 * gridSize &&
                             mouse.y > p.posY - gridSize &&
                             mouse.y < p.posY
                         ) {
                             // 机身
                             flag = true;
                         } else if (
-                            mouse.x < p.posX - 1 * gridSize &&
-                            mouse.x > p.posX - 2 * gridSize &&
+                            mouse.x < p.posX&&
+                            mouse.x > p.posX - 1 * gridSize &&
                             mouse.y > p.posY - 3 * gridSize &&
                             mouse.y < p.posY + 2 * gridSize
                         ) {
                             // 前翼
                             flag = true;
                         } else if (
-                            mouse.x < p.posX - 3 * gridSize &&
-                            mouse.x > p.posX - 4 * gridSize &&
+                            mouse.x < p.posX - 2 * gridSize &&
+                            mouse.x > p.posX - 3 * gridSize &&
                             mouse.y > p.posY - 2 * gridSize &&
                             mouse.y < p.posY + 1 * gridSize
                         ) {
@@ -204,24 +204,24 @@ export default {
                         if (
                             mouse.x > p.posX &&
                             mouse.x < p.posX + 1 * gridSize &&
-                            mouse.y > p.posY &&
-                            mouse.y < p.posY + 4 * gridSize
+                            mouse.y > p.posY - gridSize &&
+                            mouse.y < p.posY + 3 * gridSize
                         ) {
                             // 机身
                             flag = true;
                         } else if (
                             mouse.x > p.posX - 2 * gridSize &&
                             mouse.x < p.posX + 3 * gridSize &&
-                            mouse.y > p.posY + 1 * gridSize &&
-                            mouse.y < p.posY + 2 * gridSize
+                            mouse.y > p.posY &&
+                            mouse.y < p.posY + gridSize
                         ) {
                             // 前翼
                             flag = true;
                         } else if (
                             mouse.x > p.posX - 1 * gridSize &&
                             mouse.x < p.posX + 2 * gridSize &&
-                            mouse.y > p.posY + 3 * gridSize &&
-                            mouse.y < p.posY + 4 * gridSize
+                            mouse.y > p.posY + 2 * gridSize &&
+                            mouse.y < p.posY + 3 * gridSize
                         ) {
                             // 尾翼
                             flag = true;
@@ -408,7 +408,8 @@ export default {
 
             this.repaintPlane();
             let [x, y] = this.posTransform(this.pickedPlane.posX, this.pickedPlane.posY);
-            if(x > 0 && y > 0)  // 位置合法
+            console.log('x, y: ' + x + ' ' + y)
+            if(x >= 0 && y >= 0)  // 位置合法
                 bus.$emit('plane-pos', [this.pickedPlane.no, x, y, this.pickedPlane.direct]); // 更新一下控制模块的飞机位置
             else    // 位置不合法
                 bus.$emit('plane-pos', [this.pickedPlane.no]); // 更新一下控制模块的飞机位置
