@@ -139,11 +139,11 @@ export default {
                 case EVT_TYPE.CLICK:    // 点击结果
                     // 显示结果
                     if(message[2] == 1)
-                        bus.$emit('fill', this.clickPos.x, this.clickPos.y, 'none');
+                        bus.$emit('fill', this.clickPos.x, this.clickPos.y, 'none', true);
                     else if(message[2] == 2)
-                        bus.$emit('fill', this.clickPos.x, this.clickPos.y, 'body');
+                        bus.$emit('fill', this.clickPos.x, this.clickPos.y, 'body', true);
                     else if(message[2] == 3)
-                        bus.$emit('fill', this.clickPos.x, this.clickPos.y, 'head');
+                        bus.$emit('fill', this.clickPos.x, this.clickPos.y, 'head', true);
                     
                     this.sendWait();
                     wait(1000).then(() => {
@@ -154,8 +154,8 @@ export default {
                 case EVT_TYPE.LOCATE:   // 定位飞机结果
                     var direct = 'left';
                     if(message[2] == 0){    // 猜错，恢复点击过的地方
-                        bus.$emit('fill', this.clickPos.x, this.clickPos.y, 'blank');
-                        bus.$emit('fill', this.clickPos2.x, this.clickPos2.y, 'blank');                    
+                        bus.$emit('fill', this.clickPos.x, this.clickPos.y, 'blank', true);
+                        bus.$emit('fill', this.clickPos2.x, this.clickPos2.y, 'blank', true);                    
                         this.isUserTurn = false;
                         bus.$emit("show-user");
                     }
@@ -172,7 +172,7 @@ export default {
                             else
                                 direct = 'right';
                         }
-                        bus.$emit('fill-plane', this.clickPos.x, this.clickPos.y, direct);
+                        bus.$emit('fill-plane', this.clickPos.x, this.clickPos.y, direct, true);
                         
                         // 判断游戏是否继续
                         if(message[3] == 1) {

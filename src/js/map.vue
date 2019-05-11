@@ -82,10 +82,10 @@ export default {
             this.showEnemy = true;
 
             for(var i = 0; i < this.enemyOps.length; i++) {
-                if(this.enemyOps[i][2] == 'up' || this.enemyOps[i][2] == 'down' || this.enemyOps[i][2] == 'left' || this.enemyOps[i][2] == 'right') {
-                    this.fillPlane(this.enemyOps[i][0], this.enemyOps[i][1], this.enemyOps[i][2], true);
+                if(this.enemyOps[i][0] == true) {
+                    this.fillPlane(this.enemyOps[i][1], this.enemyOps[i][2], this.enemyOps[i][3], true);
                 } else {
-                    this.fillGrid(this.enemyOps[i][0], this.enemyOps[i][1], this.enemyOps[i][2], true);
+                    this.fillGrid(this.enemyOps[i][1], this.enemyOps[i][2], this.enemyOps[i][3], true);
                 }
             }
         });
@@ -98,11 +98,16 @@ export default {
             this.enemyOps = [];
         })
         bus.$on('fill', (x, y, type, isEnemy) => { 
-            this.enemyOps.push([x, y, type, isEnemy]);
-            this.fillGrid();
-        bus.$on('fill-plane', () => {
-            this.enemyOps.push([x, y, direct, isEnemy]);            
-            this.fillPlane()
+            if(isEnemy)
+                this.enemyOps.push([false , x, y, type, isEnemy]);
+            
+            this.fillGrid(x, y, type, isEnemy);
+            });
+        bus.$on('fill-plane', (x, y, direct, isEnemy) => {
+            if(isEnemy)
+                this.enemyOps.push([true, x, y, direct, isEnemy]);            
+            
+            this.fillPlane(x, y, direct, isEnemy);
             });
     },
     mounted: function() {
@@ -567,11 +572,11 @@ export default {
             if(isEnemy) {
                 p = new this.Plane(posX, posY, direct,'#F56C6C', 0)
             } else {
-                this.planes.forEach((plane, index)=>{
-                    if(plane.posX == posX && plane.posY == posY) {
+                for(var i = 0; i < 3; i++) {
+                    if(this.planes[i].posX == posX && this.planes[i].posY == posY) {
                         p = plane;
                     }
-                });
+                }
                 p.color = '#F56C6C';
             }            
 
