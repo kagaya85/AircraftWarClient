@@ -31,8 +31,8 @@ let template = [
   }
 ]
 
-const isDevMode = process.execPath.match(/[\\/]electron/);
-// const isDevMode = false;
+// const isDevMode = process.execPath.match(/[\\/]electron/);
+const isDevMode = false;
 
 if (isDevMode) enableLiveReload();
 
