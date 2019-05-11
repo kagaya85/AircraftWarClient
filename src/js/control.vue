@@ -229,7 +229,7 @@ export default {
                             else
                                 direct = 'right';
                         }
-                        bus.$emit('fill-plane', x1, y2, direct, false);
+                        bus.$emit('fill-plane', x1, y1, direct, false);
                     }
                     else {
                         // 对手猜错
@@ -469,13 +469,13 @@ export default {
         },
         backToReady: function(){
             // 回到准备阶段
-            this.reSendFlag = false;
-            this.reqBuf = null;
             this.isBattle = false;
             this.isReady = false;
             this.isEnd = false;
             this.status = STATUS.READY;
-
+            this.isEnemyReady = false;
+            
+            bus.$emit('init');
             this.sendUserStatus();
         }
     }

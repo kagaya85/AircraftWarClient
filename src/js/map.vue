@@ -109,6 +109,12 @@ export default {
             
             this.fillPlane(x, y, direct, isEnemy);
             });
+        bus.$on('init', () => {
+            this.planes = [];
+            this.enemyOps = [];
+            this.isBattle = false;
+            this.init();
+        });
     },
     mounted: function() {
         this.init();
@@ -130,10 +136,6 @@ export default {
                 this.planes.push(p);
                 this.drawPlane(p);
             }
-            // var canvas = this.$refs.planeLayer;
-            // canvas.addEventListener("mousedown", this.mouseDownHandler);
-            // canvas.addEventListener("mousemove", this.mouseMoveHandler);
-            // canvas.addEventListener("mouseup", this.mouseUpHandler);
         },
         mouseDownHandler: function(e) {
             if(this.isBattle)
