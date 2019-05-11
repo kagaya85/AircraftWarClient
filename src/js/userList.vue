@@ -98,6 +98,7 @@ export default {
             this.socket.on('message', this.messageHandler); // 开始监听消息
             this.listStart = 0;
             this.numPerPage = 5;
+            this.reSendFlag = true;   // 重发控制
             this.getUserList(this.listStart, this.numPerPage); 
             this.sendRequest();
         })
@@ -136,6 +137,10 @@ export default {
                         );
                     }   // no error end
                 }); // send end
+            }
+            
+            if(this.reSendCount > 5) {
+                this.logout();
             }
 
             // 设置计时器
@@ -223,7 +228,7 @@ export default {
         },
         messageHandler: function(message, remote) {
             console.log(new Date().toLocaleString() + " Message received: " + message[0] + message[1]);
-            if (message[1] != EVT_TYPE.ENFORCE_LGOT && message[0] != STATUS.SELECT)  {
+            if (message[0] != STATUS.SPECIAL && message[0] != STATUS.SELECT)  {
                 // 不是本阶段的包全部忽略
                 return;
             }
@@ -278,23 +283,27 @@ export default {
                     this.isLoading = false;
                     break;
                 case EVT_TYPE.WAIT: // wait
-                    if(this.request == REQ_TYPE.LOGOUT){
+                    if(this.request == REQ_TYPE.LOGOUT || this.request == REQ_TYPE.ENFORCE_LGOT){
                         console.log("logout!!!");
-                        this.reSendFlag = false;
-                        this.reqBuf = null;
-                        this.showUserList = false;
-                        this.socket.removeListener("message", this.messageHandler);
-                        bus.$emit("logout");
+                        this.logout();
                     }
-                    this.getUserList(this.listStart, this.numPerPage);
+                    // this.getUserList(this.listStart, this.numPerPage);
                     break;
                 case EVT_TYPE.ENFORCE_LGOT:
                     console.log("Enforce logout");
-                    logout_btn();
+                    var buf = new Buffer.alloc(2 + UnameLen + 1);
+                    this.request = REQ_TYPE.ENFORCE_LGOT;
+                    
+                    buf[0] = STATUS.SPECIAL;
+                    buf[1] = REQ_TYPE.LOGOUT;
+                    buf.write(this.username, 2, 20, 'ascii');
+                
+                    this.reqBuf = buf;
                     break;
                 default:
                     return;
             }
+            this.reSendCount = 0;   // 计数器置零
         },
         getInvitationHandler: function(event, index) {
             // 窗体返回邀请处理结果
@@ -332,13 +341,20 @@ export default {
             this.request = REQ_TYPE.LOGOUT;
             this.waitfor = EVT_TYPE.WAIT;
 
-            buf[0] = STATUS.SPECIAL;
+            buf[0] = STATUS.SELECT;
             buf[1] = REQ_TYPE.LOGOUT;
             buf.write(this.username, 2, 20, 'ascii');
         
             this.reqBuf = buf;
         },
         // 进入游戏准备阶段
+        logout: function() {
+            this.reSendFlag = false;
+            this.reqBuf = null;
+            this.showUserList = false;
+            this.socket.removeListener("message", this.messageHandler);
+            bus.$emit("logout");
+        },
         gameReady: function(roomId) {
             // 该阶段收尾
             console.log("Game ready!!!");

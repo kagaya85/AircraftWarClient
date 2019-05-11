@@ -111,7 +111,7 @@
 .errorMessages {
     display: inline-block;
     height: 30px;
-    width: 300px;
+    width: 400px;
     overflow: hidden;
     border-radius: 10px;
     color: #ff9900;
@@ -129,7 +129,7 @@ export default {
         return {
             isLogin: true,
             isLoading: true,
-            isConnecting: false,
+            isBtnLoading: false,
             socket: null,
             host: null,
             port: null,
@@ -154,11 +154,12 @@ export default {
         document.body.style.backgroundColor =
             bgColorArr[Math.floor(Math.random() * bgColorArr.length)];
         
-        bus.$on("logout", username => {
+        bus.$on("logout", () => {
             this.isLogin = true;
             this.socket.on('message', this.messageHandler); // 开始监听消息
             this.isLoading = true;
-            
+            this.isBtnLoading = false;
+            this.btnLoadingSyle = "";
             this.loadContent();
         })
     },
@@ -204,7 +205,7 @@ export default {
             this.sendRequest(buf);
         },
         checkInput: function() {
-            // 只检查输入长度
+            // 只检查输入长度 
             if (this.username == "") {
                 this.alertMessage("Please input username.");
                 return false;
@@ -280,9 +281,9 @@ export default {
             this.username = this.username.replace(/[^\a-\z\A-\Z0-9]/g, "");
         },
         messageHandler: function(message, remote) {
-            this.reSentFlag = false;
             console.log(new Date().toLocaleString() + " Message received: " + message[0] + message[1]);
             if (message[0] == STATUS.LOGIN && message[1] == EVT_TYPE.LOGIN) {
+                this.reSentFlag = false;            
                 if (message[2] == 1) {
                 // if (true) {
                     console.log("Login success!!!");
@@ -293,7 +294,7 @@ export default {
                 } else {
                     this.isBtnLoading = false;
                     this.btnLoadingSyle = "";
-                    this.alertMessage("Login failed: " + message.toString('ascii', 3));
+                    this.alertMessage("Login failed: " + message.toString('ascii', 3, message.length-1));
                 }
             }
             else {  // others

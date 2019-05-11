@@ -401,10 +401,10 @@ export default {
                     return;
             }
 
-            if(this.isCover()){
-                p.posX = this.originalPos.x;
-                p.posY = this.originalPos.y;
-            }
+            // if(this.isCover()){
+            //     p.posX = this.originalPos.x;
+            //     p.posY = this.originalPos.y;
+            // }
 
             this.repaintPlane();
             let [x, y] = this.posTransform(this.pickedPlane.posX, this.pickedPlane.posY);
@@ -600,7 +600,7 @@ export default {
                 ctx.lineTo(sx - size * 2, sy);
                 ctx.lineTo(sx - size * 2, sy + size);
                 ctx.lineTo(sx - size * 3, sy + size);
-                ctx.lineTo(sx - size * 4, sy - size * 2);
+                ctx.lineTo(sx - size * 3, sy - size * 2);
                 ctx.lineTo(sx - size * 2, sy - size * 2);
                 ctx.lineTo(sx - size * 2, sy - size);
                 ctx.lineTo(sx - size * 1, sy - size);
@@ -653,26 +653,33 @@ export default {
         rotateHandler: function() {
             var canvas = this.$refs.planeLayer;
             var ctx = canvas.getContext("2d");
+            var picked = this.planes[this.planes.length - 1];
 
-            var direct = this.planes[this.planes.length - 1].direct;
+            var direct = picked.direct;
             switch (direct) {
                 case "left":
-                    this.planes[this.planes.length - 1].direct = "up";
+                    picked.direct = "up";
                     break;
                 case "right":
-                    this.planes[this.planes.length - 1].direct = "down";
+                    picked.direct = "down";
                     break;
                 case "up":
-                    this.planes[this.planes.length - 1].direct = "right";
+                    picked.direct = "right";
                     break;
                 case "down":
-                    this.planes[this.planes.length - 1].direct = "left";
+                    picked.direct = "left";
                     break;
                 default:
                     console.log(`Rotate error: ${direct}`);
                     return;
             }
             this.repaintPlane();
+            
+            let [x, y] = this.posTransform(picked.posX, picked.posY);
+            if(x > 0 && y > 0)  // 位置合法
+                bus.$emit('plane-pos', [picked.no, x, y, picked.direct]); // 更新一下控制模块的飞机位置
+            else    // 位置不合法
+                bus.$emit('plane-pos', [picked.no]); // 更新一下控制模块的飞机位置
         },
         // 飞机对象
         Plane: function(x, y, direct, color, no) {

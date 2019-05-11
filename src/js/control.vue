@@ -102,7 +102,7 @@ export default {
         },
         messageHandler: function(message, remote) {
             console.log(new Date().toLocaleString() + " Message received: " + message[0] + message[1]);
-            if ((message[1] != EVT_TYPE.ENFORCE_LGOT) && (message[0] != this.status || message[1] != this.waitfor))  {
+            if (message[0] != STATUS.SPECIAL && (message[0] != this.status || message[1] != this.waitfor))  {
                 // 不是本阶段的包全部忽略 或 不是期待的事件
                 return;
             }
@@ -200,23 +200,19 @@ export default {
                     this.gameResult = "Enemy leaved, You Win!"
                     break;
                 case EVT_TYPE.WAIT:     // ACK
-                    if(this.request == REQ_TYPE.LOGOUT){
+                    if(this.request == REQ_TYPE.LOGOUT || this.request == REQ_TYPE.ENFORCE_LGOT){
                         console.log("logout!!!");
-                        this.reSendFlag = false;
-                        this.reqBuf = null;
-                        this.showUserList = false;
-                        this.socket.removeListener("message", this.messageHandler);
-                        bus.$emit("logout");
+                        this.logout();
                     }
                     break;
                 case EVT_TYPE.ENFORCE_LGOT:
                     console.log('Enforce logout');
                     var buf = new Buffer.alloc(2 + UnameLen + 1);
-                    this.request = REQ_TYPE.LOGOUT;
+                    this.request = REQ_TYPE.ENFORCE_LGOT;
                     this.waitfor = EVT_TYPE.WAIT;
 
                     buf[0] = STATUS.SPECIAL;
-                    buf[1] = REQ_TYPE.LOGOUT;
+                    buf[1] = REQ_TYPE.ENFORCE_LGOT;
                     buf.write(this.username, 2, 20, 'ascii');
                 
                     this.reqBuf = buf;
@@ -224,7 +220,8 @@ export default {
             }
 
             // 已处理完请求
-            // this.reqBuf = null;
+        
+            this.reSendCount = 0;   // 计数器置零
         },
         sendRequest: function() {
             // 调用一次后就会循环调用，发送this.reqBuf里的东西
@@ -248,6 +245,10 @@ export default {
                         );
                     }   // no error end
                 }); // send end
+            }
+
+            if(this.reSendCount > 5) {
+                this.logout();
             }
 
             // 设置计时器
@@ -360,7 +361,14 @@ export default {
             buf[22] = this.isReady;
 
             this.reqBuf = buf;
-        }
+        },
+        logout: function() {
+            this.reSendFlag = false;
+            this.reqBuf = null;
+            this.showPanel = false;
+            this.socket.removeListener("message", this.messageHandler);
+            bus.$emit("logout");
+        },
     }
 };
 </script>
