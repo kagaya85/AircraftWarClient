@@ -102,8 +102,9 @@ export default {
         },
         messageHandler: function(message, remote) {
             console.log(new Date().toLocaleString() + " Message received: " + message[0] + message[1]);
-            if (message[0] != STATUS.SPECIAL && (message[0] != this.status || message[1] != this.waitfor))  {
+            if (message[0] != STATUS.SPECIAL && message[0] != this.status)  {
                 // 不是本阶段的包全部忽略 或 不是期待的事件
+                console.log('ignored');
                 return;
             }
             switch(message[1]) {
