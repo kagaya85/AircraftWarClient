@@ -73,14 +73,13 @@ export default {
             // list
             selectUser: null,
             numPerPage: 5,  //每页用户显示个数
-            totalUserNum: 4,    // 在线总人数
+            totalUserNum: 0,    // 在线总人数
             pageNum: 0,            
             showBack: false,
             showNext: false,
             listStart: 0,
             userList: [],
             // invitation
-            ivtUsername: null,
             isInvited: false,
             // udp
             socket: null,
@@ -95,15 +94,22 @@ export default {
         bus.$on("user", username => {
             this.username = username;
             this.showUserList = true;
-            this.socket.on('message', this.messageHandler); // 开始监听消息
+            this.isInvited = false;
+            this.selectUser = null;
+            this.inviteUser = null;
             this.listStart = 0;
             this.numPerPage = 5;
             this.reSendFlag = true;   // 重发控制
             this.reqBuf = null;
+            this.totalUserNum = 0;
+
+            this.socket.on('message', this.messageHandler); // 开始监听消息
             this.getUserList(this.listStart, this.numPerPage); 
             this.sendRequest();
         })
-        ipcRenderer.on('get-invitation-dialog-selection', this.getInvitationHandler);
+        ipcRenderer.on('get-invitation-dialog-selection', (event, index) => {
+            this.getInvitationHandler(index);
+            });
         // ipcRenderer.on('refused-dialog-selection', this.refusedHandler);
         // ipcRenderer.on('game-ready-dialog-selection', this.gameReadyHandler);
     },
@@ -166,7 +172,7 @@ export default {
             buf.write(this.username, 2, 'ascii');
             buf[buf.length - 2] = start;
             buf[buf.length - 1] = number;
-        
+         
             this.reqBuf = buf;
         },
         sendInvitation: function(targetUser) {
@@ -229,7 +235,7 @@ export default {
             }
         },
         messageHandler: function(message, remote) {
-            console.log(new Date().toLocaleString() + " Message received: " + message[0] + message[1]);
+            console.log(new Date().toLocaleString() + " Message received: " + message[0] + ' ' + message[1]);
             if (message[0] != STATUS.SPECIAL && message[0] != STATUS.SELECT)  {
                 // 不是本阶段的包全部忽略
                 return;
@@ -257,11 +263,10 @@ export default {
                         break;
 
                     this.isInvited = true;
-                    var user = message.toString('ascii', 2);
-                    console.log("Get invitation form " + user);
+                    this.inviteUser = message.toString('ascii', 2);
+                    console.log("Get invitation form " + this.inviteUser);
                     // 弹个窗确认
-                    ipcRenderer.send('open-get-invitation-dialog', user);
-                    this.ivtUsername = user;
+                    ipcRenderer.send('open-get-invitation-dialog', this.inviteUser);
                     this.getUserList(this.listStart, this.numPerPage); 
                     break;
                 case EVT_TYPE.BATTLE_CHK:   // game ready
@@ -307,7 +312,7 @@ export default {
             }
             this.reSendCount = 0;   // 计数器置零
         },
-        getInvitationHandler: function(event, index) {
+        getInvitationHandler: function(index) {
             // 窗体返回邀请处理结果
             var result = 0;
             if (index == 1){
@@ -325,9 +330,9 @@ export default {
             buf[0] = STATUS.SELECT;
             buf[1] = REQ_TYPE.HANDLE_IVT;
             buf.write(this.username, 2, 20, 'ascii');
-            buf.write(this.ivtUsername, 22, 20, 'ascii');
+            buf.write(this.inviteUser, 22, 20, 'ascii');
             buf[buf.length - 1] = result;
-        
+            console.log('result: ' + result);
             this.reqBuf = buf;
         },
         // refusedHandler: function() {

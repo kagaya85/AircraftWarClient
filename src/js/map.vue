@@ -376,7 +376,7 @@ export default {
                             p.posX += gridSize;
                         }
 
-                        if (p.posY < gridSize) p.posY = 0;
+                        if (p.posY < gridSize) p.posY = gridSize;
                         else if (p.posY > 7 * gridSize) p.posY = 7 * gridSize;
                         else if (dy >= boundary && p.posY < 7 * gridSize) {
                             p.posY += gridSize;
@@ -464,16 +464,6 @@ export default {
                     pos.push([x-3,y-1])
                     pos.push([x-3,y+1])
                 } else if (direct == "up") {
-                    pos.push([x,y-1])
-                    pos.push([x,y-2])
-                    pos.push([x,y-3])
-                    pos.push([x+1,y-1])
-                    pos.push([x+2,y-1])
-                    pos.push([x-1,y-1])
-                    pos.push([x-2,y-1])
-                    pos.push([x-1,y-3])
-                    pos.push([x+1,y-3])
-                } else if (direct == "down") {
                     pos.push([x,y+1])
                     pos.push([x,y+2])
                     pos.push([x,y+3])
@@ -483,6 +473,16 @@ export default {
                     pos.push([x-2,y+1])
                     pos.push([x-1,y+3])
                     pos.push([x+1,y+3])
+                } else if (direct == "down") {
+                    pos.push([x,y-1])
+                    pos.push([x,y-2])
+                    pos.push([x,y-3])
+                    pos.push([x+1,y-1])
+                    pos.push([x+2,y-1])
+                    pos.push([x-1,y-1])
+                    pos.push([x-2,y-1])
+                    pos.push([x-1,y-3])
+                    pos.push([x+1,y-3])
                 }
                 planes_postion.push(pos)
             }
@@ -568,17 +568,8 @@ export default {
         fillPlane: function(x, y, direct, isEnemy = true){
             console.log('fill-plane');
             var [posX, posY] = [x * this.gridSize, (y + 1) * this.gridSize];
-            var p;
-            if(isEnemy) {
-                p = new this.Plane(posX, posY, direct,'#F56C6C', 0)
-            } else {
-                for(var i = 0; i < 3; i++) {
-                    if(this.planes[i].posX == posX && this.planes[i].posY == posY) {
-                        p = plane;
-                    }
-                }
-                p.color = '#F56C6C';
-            }            
+            console.log('posX, posY:'+ posX + ' ' + posY);
+            var p = new this.Plane(posX, posY, direct,'#F56C6C', 0);
 
             this.drawPlane(p, isEnemy);
         },

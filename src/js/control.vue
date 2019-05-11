@@ -2,9 +2,9 @@
     <div class="panel-container" v-show="showPanel">
         <div class="preparation-phase" v-show="!isBattle">
             <div v-show="isEnemyReady">Your opponent is ready</div>
-            <div class="btn" @click="rotate_btn">Rotate</div>
+            <div class="btn" v-show="!isReady" @click="rotate_btn">Rotate</div>
             <div :class="['btn', isReady ? 'selected' : null]" @click="ready_btn">Ready</div>
-            <div class="btn" @click="leave">Leave</div>
+            <div class="btn" v-show="!isReady" @click="sendLeave">Leave</div>
         </div>
         <div class="action-phase" v-show="isBattle">
             <div class="score-board">
@@ -13,7 +13,8 @@
                 </div>
                 <span class="info" v-show="!isEnd">Game start！！！{{ isUserTurn ? 'Your turn' : 'Not your turn'}}</span>
                 <span class="info" v-show="isEnd">Game end！！！{{ gameResult }}</span>
-                <div class="btn" v-show="isEnd" @click="backToReady">GoBack</div>
+                <div class="btn" v-show="isEnd && !isOpLeave" @click="backToReady">GoBack</div>
+                <div class="btn" v-show="isEnd && isOpLeave" @click="sendLeave">Leave</div>
             </div>
         </div>
     </div>
@@ -46,6 +47,7 @@ export default {
     data: function() {
         return {
             isBattle: false,    // 是否在对战状态
+            isOpLeave: false,
             showPanel: false,
             isReady: false,     // 是否在准备状态，准备按钮被按下
             isEnd: false,       // 是否结束
@@ -74,7 +76,13 @@ export default {
     created: function() {
         bus.$on("start", (username, roomId) => {
             this.username = username;
+            this.isOpLeave = false;
+            this.isBattle = false;
             this.showPanel = true;
+            this.isReady = false;
+            this.isEnd = false;
+            this.isEnemyReady = false;
+            this.reSendFlag = true;
             this.socket.on('message', this.messageHandler); // 开始监听消息
             this.sendUserStatus();
             this.sendRequest(); // 该函数重复调用自己，发送reqBuf
@@ -204,10 +212,24 @@ export default {
                     break;
                 }
                 case EVT_TYPE.OPLOCATE: {   // 对手定位飞机
-                    let [x, y] = [message[2], message[3]];
+                    let [x1, y1] = [message[2], message[3]];
+                    let [x2, y2] = [message[4], message[5]];                    
+                    var direct = 'left';
                     if (message[6] == 1){
                         // 对手猜中
-                        bus.$emit('fillPlane', x, y, null, false);
+                        if(x1 == x2) {
+                            if(y2 > y1)
+                                direct = 'up';
+                            else
+                                direct = 'down';
+                        }
+                        else {
+                            if(x2 > x1)
+                                direct = 'left';
+                            else
+                                direct = 'right';
+                        }
+                        bus.$emit('fill-plane', x1, y2, direct, false);
                     }
                     else {
                         // 对手猜错
@@ -233,13 +255,17 @@ export default {
                 case EVT_TYPE.OPLEAVE:  // 对手离开，退出房间
                     this.isBattle = true;
                     this.isEnd = true;
+                    this.isOpLeave = true;
                     this.gameResult = "Enemy leaved, You Win!";
-                    wait(2000).then(this.leave);
+                    // wait(2000).then(this.leave);
                     break;
                 case EVT_TYPE.WAIT:     // ACK
                     if(this.request == REQ_TYPE.LOGOUT || this.request == REQ_TYPE.ENFORCE_LGOT){
-                        console.log("logout!!!");
+                        console.log("Logout!!!");
                         this.logout();
+                    } else if (this.request == REQ_TYPE.LEAVE) {
+                        console.log("Leave!!!");                        
+                        this.leave();
                     }
                     break;
                 case EVT_TYPE.ENFORCE_LGOT:
@@ -411,6 +437,16 @@ export default {
 
             this.reqBuf = buf;
         },
+        sendLeave: function() {
+            var buf = Buffer.alloc(2 + UnameLen);
+            this.request = REQ_TYPE.LEAVE;
+
+            buf[0] = this.status;
+            buf[1] = REQ_TYPE.LEAVE;
+            buf.write(this.username, 2, 20, 'ascii');
+
+            this.reqBuf = buf;
+        },
         logout: function() {
             this.reSendFlag = false;
             this.reqBuf = null;
@@ -429,7 +465,7 @@ export default {
             this.isReady = false;
             this.isEnd =false;
             this.socket.removeListener("message", this.messageHandler);
-            bus.$emit("user");
+            bus.$emit("user", this.username);
         },
         backToReady: function(){
             // 回到准备阶段

@@ -31,8 +31,8 @@ let template = [
   }
 ]
 
-// const isDevMode = process.execPath.match(/[\\/]electron/);
-const isDevMode = false;
+const isDevMode = process.execPath.match(/[\\/]electron/);
+// const isDevMode = false;
 
 if (isDevMode) enableLiveReload();
 
@@ -101,7 +101,7 @@ ipcMain.on('open-get-invitation-dialog', function (event, user) {
     buttons: ['Reject', 'Accept']
   }
   dialog.showMessageBox(options, function (index) {
-    event.sender.send('get-invitation-dialog-selection', index)
+    event.sender.send('get-invitation-dialog-selection', index);
   })
 })
 
@@ -112,7 +112,7 @@ ipcMain.on('open-refused-dialog', function (event) {
     message: "Oh no! you are refused!",
     buttons: ['Ok']
   }
-  dialog.showMessageBox(options, null)
+  dialog.showMessageBox(options, null);
 })
 
 ipcMain.on('open-game-ready-dialog', function (event) {
@@ -122,7 +122,7 @@ ipcMain.on('open-game-ready-dialog', function (event) {
     message: "Game is ready!",
     buttons: ['Ok']
   }
-  dialog.showMessageBox(options, null)
+  dialog.showMessageBox(options, null);
 })
 
 ipcMain.on('open-plane-error-dialog', function (event) {
@@ -132,5 +132,5 @@ ipcMain.on('open-plane-error-dialog', function (event) {
     message: "Your aircraft has something wrong!",
     buttons: ['Ok']
   }
-  dialog.showMessageBox(options, null)
+  dialog.showMessageBox(options, null);
 })
