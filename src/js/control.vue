@@ -9,7 +9,7 @@
         <div class="action-phase" v-show="isBattle">
             <div class="score-board">
                 <div class="" data-control="BOX" id="Box_points_switch">
-                    <label v-show="isUserTurn">Locate Aircraft<input class="mui-switch mui-switch-anim" type="checkbox" v-model="isLocate" id="switch"></label>
+                    <label v-show="isUserTurn && !isEnd">Locate Aircraft<input class="mui-switch mui-switch-anim" type="checkbox" v-model="isLocate" id="switch"></label>
                 </div>
                 <span class="info" v-show="!isEnd">Game start！！！{{ isUserTurn ? 'Your turn' : 'Not your turn'}}</span>
                 <span class="info" v-show="isEnd">Game end！！！{{ gameResult }}</span>
@@ -474,7 +474,8 @@ export default {
             this.isEnd = false;
             this.status = STATUS.READY;
             this.isEnemyReady = false;
-            
+
+            bus.$emit("show-user");            
             bus.$emit('init');
             this.sendUserStatus();
         }

@@ -114,6 +114,7 @@ export default {
             this.enemyOps = [];
             this.isBattle = false;
             this.init();
+            this.repaintPlane();
         });
     },
     mounted: function() {
@@ -675,7 +676,7 @@ export default {
             
             ctx.fillStyle = plane.color;
             ctx.fill();
-            // ctx.stroke();
+            ctx.stroke();
 
         },
         rotateHandler: function() {
