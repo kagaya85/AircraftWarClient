@@ -334,16 +334,16 @@ export default {
                     }
                     break;
                 case "right":
-                    if (p.posX < 13 * gridSize && p.posY < 14 * gridSize) {
+                    if (p.posX < 12 * gridSize && p.posY < 14 * gridSize) {
                         let dx = p.posX % gridSize;
                         let dy = p.posY % gridSize;
                         let boundary = gridSize / 2;
                         p.posX -= dx;
                         p.posY -= dy;
 
-                        if (p.posX < 4 * gridSize) p.posX = 4 * gridSize;
-                        else if (p.posX > 10 * gridSize) p.posX = 10 * gridSize;
-                        else if (dx >= boundary && p.posX < 10 * gridSize) {
+                        if (p.posX < 3 * gridSize) p.posX = 3 * gridSize;
+                        else if (p.posX > 9 * gridSize) p.posX = 9 * gridSize;
+                        else if (dx >= boundary && p.posX < 9 * gridSize) {
                             p.posX += gridSize;
                         }
 
@@ -355,7 +355,7 @@ export default {
                     }
                     break;
                 case "up":
-                    if (p.posX < 14 * gridSize && p.posY < 10 * gridSize) {
+                    if (p.posX < 14 * gridSize && p.posY < 11 * gridSize) {
                         let dx = p.posX % gridSize;
                         let dy = p.posY % gridSize;
                         let boundary = gridSize / 2;
@@ -368,9 +368,9 @@ export default {
                             p.posX += gridSize;
                         }
 
-                        if (p.posY < 0) p.posY = 0;
-                        else if (p.posY > 6 * gridSize) p.posY = 6 * gridSize;
-                        else if (dy >= boundary && p.posY < 6 * gridSize) {
+                        if (p.posY < gridSize) p.posY = 0;
+                        else if (p.posY > 7 * gridSize) p.posY = 7 * gridSize;
+                        else if (dy >= boundary && p.posY < 7 * gridSize) {
                             p.posY += gridSize;
                         }
                     }
@@ -594,38 +594,38 @@ export default {
                 ctx.lineTo(sx, sy - size);
                 ctx.closePath();
             } else if (plane.direct == "right") {
-                ctx.lineTo(sx - size, sy);
+                ctx.lineTo(sx, sy + size * 2);
                 ctx.lineTo(sx - size, sy + size * 2);
-                ctx.lineTo(sx - size * 2, sy + size * 2);
+                ctx.lineTo(sx - size, sy);
                 ctx.lineTo(sx - size * 2, sy);
-                ctx.lineTo(sx - size * 3, sy);
+                ctx.lineTo(sx - size * 2, sy + size);
                 ctx.lineTo(sx - size * 3, sy + size);
-                ctx.lineTo(sx - size * 4, sy + size);
                 ctx.lineTo(sx - size * 4, sy - size * 2);
-                ctx.lineTo(sx - size * 3, sy - size * 2);
-                ctx.lineTo(sx - size * 3, sy - size);
+                ctx.lineTo(sx - size * 2, sy - size * 2);
                 ctx.lineTo(sx - size * 2, sy - size);
-                ctx.lineTo(sx - size * 2, sy - size * 3);
-                ctx.lineTo(sx - size, sy - size * 3);
-                ctx.lineTo(sx - size, sy - size);
+                ctx.lineTo(sx - size * 1, sy - size);
+                ctx.lineTo(sx - size * 1, sy - size * 3);
+                ctx.lineTo(sx, sy - size * 3);
                 ctx.lineTo(sx, sy - size);
+                ctx.lineTo(sx + size, sy - size);
+                ctx.lineTo(sx + size, sy);
                 ctx.closePath();
             } else if (plane.direct == "up") {
+                ctx.lineTo(sx, sy - size);                
+                ctx.lineTo(sx + size, sy - size);
                 ctx.lineTo(sx + size, sy);
-                ctx.lineTo(sx + size, sy + size);
+                ctx.lineTo(sx + size * 3, sy);
                 ctx.lineTo(sx + size * 3, sy + size);
-                ctx.lineTo(sx + size * 3, sy + size * 2);
+                ctx.lineTo(sx + size * 1, sy + size * 1);
                 ctx.lineTo(sx + size * 1, sy + size * 2);
-                ctx.lineTo(sx + size * 1, sy + size * 3);
+                ctx.lineTo(sx + size * 2, sy + size * 2);
                 ctx.lineTo(sx + size * 2, sy + size * 3);
-                ctx.lineTo(sx + size * 2, sy + size * 4);
-                ctx.lineTo(sx - size, sy + size * 4);
                 ctx.lineTo(sx - size, sy + size * 3);
-                ctx.lineTo(sx, sy + size * 3);
+                ctx.lineTo(sx - size, sy + size * 2);
                 ctx.lineTo(sx, sy + size * 2);
-                ctx.lineTo(sx - size * 2, sy + size * 2);
+                ctx.lineTo(sx, sy + size * 1);
                 ctx.lineTo(sx - size * 2, sy + size);
-                ctx.lineTo(sx, sy + size);
+                ctx.lineTo(sx - size * 2, sy);
                 ctx.closePath();
             } else if (plane.direct == "down") {
                 ctx.lineTo(sx + size, sy);
@@ -645,6 +645,7 @@ export default {
                 ctx.lineTo(sx, sy - size);
                 ctx.closePath();
             }
+            
             ctx.stroke();
             ctx.fillStyle = plane.color;
             ctx.fill();
@@ -680,38 +681,6 @@ export default {
             this.direct = direct; // left right up down
             this.color = color;
             this.no = no;
-        },
-        // 通信相关
-        sendRequest: function() {
-            // 调用一次后就会循环调用，发送this.reqBuf里的东西
-            if (this.reqBuf) {
-                // reqBuf 不空，则调用send函数
-                this.socket.send(this.reqBuf, this.port, this.host, error => {
-                    if (error) {
-                        console.log("error" + error);
-                    } else {
-                        // no error
-                        console.log(
-                            new Date().toLocaleString() +
-                                " Message send to " +
-                                this.host +
-                                ":" +
-                                this.port +
-                                "STA: " +
-                                buf[0].toString() +
-                                "REQ: " +
-                                buf[1].toString()
-                        );
-                    }   // no error end
-                }); // send end
-            }
-
-            // 设置计时器
-            if(this.reSendFlag){
-                wait(1000).then(() => {
-                    this.sendRequest();
-                });
-            }
         }
     }
 };

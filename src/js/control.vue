@@ -8,7 +8,7 @@
         <div class="action-phase" v-show="isBattle">
             <div class="score-board">
                 <div class="" data-control="BOX" id="Box_points_switch">
-                    <label v-show="isUserTurn">Locate Aircraft<input class="mui-switch mui-switch-anim" type="checkbox" id="switch"></label>
+                    <label v-show="isUserTurn">Locate Aircraft<input class="mui-switch mui-switch-anim" type="checkbox" v-model="isLocate" id="switch"></label>
                 </div>
                 <span class="info" v-show="!isEnd">Game start！！！{{ isUserTurn ? 'Your turn' : 'Not your turn'}}</span>
                 <span class="info" v-show="isEnd">Game end！！！{{ gameResult }}</span>
@@ -228,7 +228,7 @@ export default {
         },
         sendRequest: function() {
             // 调用一次后就会循环调用，发送this.reqBuf里的东西
-            if (this.reqBuf  && this.showPanel) {
+            if (this.reqBuf && this.showPanel) {
                 // reqBuf 不空，则调用send函数
                 this.socket.send(this.reqBuf, this.port, this.host, error => {
                     if (error) {
