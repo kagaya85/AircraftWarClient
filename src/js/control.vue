@@ -127,10 +127,11 @@ export default {
                     this.status = STATUS.BATTLE;
                     this.isUserTurn = message[2];
                     if(this.isUserTurn)
-                        bus.$emit("show-user");    // 显示用户棋盘                    
+                        bus.$emit("show-enemy");    // 显示对手棋盘                    
                     else
-                        bus.$emit("show-enemy");    // 显示对手棋盘
+                        bus.$emit("show-user");    // 显示用户棋盘
                     this.isBattle = true;
+                    this.sendWait();
                     break;
                 // battle
                 case EVT_TYPE.CLICK:    // 点击结果
@@ -142,7 +143,9 @@ export default {
                     else if(message[2] == 3)
                         bus.$emit('fill', this.clickPos.x, this.clickPos.y, 'head');
                     
-                    wait(1000).then(bus.$emit("show-user"));
+                    wait(1000).then(() => {
+                        bus.$emit("show-user")
+                        });
                     break;
                 case EVT_TYPE.LOCATE:   // 定位飞机结果
                     var direct = 'left';
@@ -172,7 +175,9 @@ export default {
                             this.gameResult = "You Win!"
                         }
                     }
-                    wait(1000).then(bus.$emit("show-user"));
+                    wait(1000).then(() => {
+                        bus.$emit("show-user")
+                        });
                     break;
                 case EVT_TYPE.OPCLICK:{  // 对手点击
                     let [x, y] = [message[2], message[3]];
@@ -184,7 +189,10 @@ export default {
                         bus.$emit('fill', x, y, 'head', false);
                     
                     this.isUserTurn = true;
-                    wait(1000).then(bus.$emit("show-enmey"));
+                    this.isLocate = false;
+                    wait(1000).then(() => {
+                        bus.$emit("show-enmey")}
+                        );
                     break;
                 }
                 case EVT_TYPE.LOCATE: {   // 对手定位飞机
@@ -199,7 +207,10 @@ export default {
                     }
                     
                     this.isUserTurn = true;
-                    wait(1000).then(bus.$emit("show-enmey"));
+                    this.isLocate = false;
+                    wait(1000).then(() => {
+                        bus.$emit("show-enmey")
+                        });
                     break;
                 }
                 // special
@@ -207,6 +218,7 @@ export default {
                     this.isBattle = true;
                     this.isEnd = true;
                     this.gameResult = "Enemy leaved, You Win!"
+                    wait(3000).then(this.leave);
                     break;
                 case EVT_TYPE.WAIT:     // ACK
                     if(this.request == REQ_TYPE.LOGOUT || this.request == REQ_TYPE.ENFORCE_LGOT){
@@ -364,7 +376,6 @@ export default {
         sendUserStatus: function() {
             var buf = new Buffer.alloc(2 + UnameLen + 1);
             this.request = REQ_TYPE.READY;
-            this.waitfor = EVT_TYPE.OPPONENT_STA;
 
             buf[0] = STATUS.READY;
             buf[1] = REQ_TYPE.READY;
@@ -373,13 +384,36 @@ export default {
 
             this.reqBuf = buf;
         },
+        sendWait: function() {
+            var buf = new Buffer.alloc(2 + UnameLen);
+            this.request = REQ_TYPE.READY;
+
+            buf[0] = this.status;
+            buf[1] = REQ_TYPE.WAIT;
+            buf.write(this.username, 2, 20, 'ascii');
+
+            this.reqBuf = buf;
+        },
         logout: function() {
             this.reSendFlag = false;
             this.reqBuf = null;
             this.showPanel = false;
+            this.isBattle = false;
+            this.isReady = false;
+            this.isEnd =false;
             this.socket.removeListener("message", this.messageHandler);
             bus.$emit("logout");
         },
+        leave: function() {
+            this.reSendFlag = false;
+            this.reqBuf = null;
+            this.showPanel = false;
+            this.isBattle = false;
+            this.isReady = false;
+            this.isEnd =false;
+            this.socket.removeListener("message", this.messageHandler);
+            bus.$emit("user");
+        }
     }
 };
 </script>
