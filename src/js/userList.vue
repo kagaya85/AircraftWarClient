@@ -124,17 +124,18 @@ export default {
                         console.log("error" + error);
                     } else {
                         // no error
-                        console.log(
-                            new Date().toLocaleString() +
-                                " Message send to " +
-                                this.host +
-                                ":" +
-                                this.port +
-                                "STA: " +
-                                this.reqBuf[0].toString() +
-                                "REQ: " +
-                                this.reqBuf[1].toString()
-                        );
+                        if(this.reqBuf)
+                            console.log(
+                                new Date().toLocaleString() +
+                                    " Message send to " +
+                                    this.host +
+                                    ":" +
+                                    this.port +
+                                    "STA: " +
+                                    this.reqBuf[0].toString() +
+                                    "REQ: " +
+                                    this.reqBuf[1].toString()
+                            );
                     }   // no error end
                 }); // send end
             }

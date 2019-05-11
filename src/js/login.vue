@@ -173,8 +173,6 @@ export default {
             wait(1000).then(() => {
                 this.isLoading = false;
                 this.count = 0;
-                // this.isLogin = false;
-                // bus.$emit("start", 'this.username');
             });
         },
         initSocket: function(socket, host, port) {

@@ -82,7 +82,7 @@ export default {
     },
     methods: {
         ready_btn: function(event) {
-            if(!this.planes[0] || !this.planes[0] || !this.planes[0] ) {
+            if(!this.planes[0] || !this.planes[1] || !this.planes[2] ) {
                 // 有飞机未摆放正确
                 // 弹个窗
                 ipcRenderer.send('open-plane-error-dialog');
@@ -118,7 +118,7 @@ export default {
                     this.isEnemyReady = message[2];
                     break;
                 case EVT_TYPE.READY:    // 准备开始，发送飞机位置
-                    if(!this.planes[0] || !this.planes[0] || !this.planes[0]) 
+                    if(!this.planes[0] || !this.planes[1] || !this.planes[2]) 
                         return;
                     this.sendPlanePos();
                     break;
@@ -241,17 +241,18 @@ export default {
                         console.log("error" + error);
                     } else {
                         // no error
-                        console.log(
-                            new Date().toLocaleString() +
-                                " Message send to " +
-                                this.host +
-                                ":" +
-                                this.port +
-                                "STA: " +
-                                this.reqBuf[0].toString() +
-                                "REQ: " +
-                                this.reqBuf[1].toString()
-                        );
+                        if(this.reqBuf)
+                            console.log(
+                                new Date().toLocaleString() +
+                                    " Message send to " +
+                                    this.host +
+                                    ":" +
+                                    this.port +
+                                    "STA: " +
+                                    this.reqBuf[0].toString() +
+                                    "REQ: " +
+                                    this.reqBuf[1].toString()
+                            );
                     }   // no error end
                 }); // send end
             }
@@ -320,7 +321,8 @@ export default {
         },
         addPlane: function(plane){
             // 收到一架飞机的位置时更新飞机数组
-            if(plane[1])
+            console.log('posX, posY: ' + plane[1] + ' ' + plane[2]);
+            if(plane[1] != null)
                 this.planes[plane[0]] = [plane[1], plane[2], plane[3]]; // 后面三项作为飞机信息放入planes数组中
             else
                 this.planes[plane[0]] = null; // 不合法飞机清空

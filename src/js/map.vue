@@ -401,14 +401,13 @@ export default {
                     return;
             }
 
-            // if(this.isCover()){
-            //     p.posX = this.originalPos.x;
-            //     p.posY = this.originalPos.y;
-            // }
+            if(this.isCover()){
+                p.posX = this.originalPos.x;
+                p.posY = this.originalPos.y;
+            }
 
             this.repaintPlane();
             let [x, y] = this.posTransform(this.pickedPlane.posX, this.pickedPlane.posY);
-            console.log('x, y: ' + x + ' ' + y)
             if(x >= 0 && y >= 0)  // 位置合法
                 bus.$emit('plane-pos', [this.pickedPlane.no, x, y, this.pickedPlane.direct]); // 更新一下控制模块的飞机位置
             else    // 位置不合法
@@ -677,7 +676,7 @@ export default {
             this.repaintPlane();
             
             let [x, y] = this.posTransform(picked.posX, picked.posY);
-            if(x > 0 && y > 0)  // 位置合法
+            if(x >= 0 && y >= 0)  // 位置合法
                 bus.$emit('plane-pos', [picked.no, x, y, picked.direct]); // 更新一下控制模块的飞机位置
             else    // 位置不合法
                 bus.$emit('plane-pos', [picked.no]); // 更新一下控制模块的飞机位置
