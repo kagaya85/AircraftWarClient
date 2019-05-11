@@ -88,6 +88,7 @@ export default {
         })
         bus.$on('fill', this.fillGrid);
         bus.$on('fill-plane', (x, y, direct, isEnemy = true) => {
+            console.log('fill-plane');
             var [posX, posY] = [x * this.gridSize, (y + 1) * this.gridSize];
             var p;
             if(isEnemy)
@@ -525,6 +526,8 @@ export default {
             }
         },
         fillGrid: function(x, y, type, isEnemy = true){
+            console.log('fill');
+            
             if(isEnemy)
                 var canvas = this.$refs.enemyLayer;
             else
@@ -550,8 +553,10 @@ export default {
             }
 
             ctx.strokeStyle = color; //"#D6D1D1"
+            ctx.beginPath();
             ctx.rect(x * this.gridSize + 1, y * this.gridSize + 1, this.gridSize - 2, this.gridSize - 2);
-            ctx.stroke();
+            
+            // ctx.stroke();
             ctx.fillStyle = color;
             ctx.fill();
         },
@@ -650,9 +655,10 @@ export default {
                 ctx.closePath();
             }
             
-            ctx.stroke();
             ctx.fillStyle = plane.color;
             ctx.fill();
+            // ctx.stroke();
+
         },
         rotateHandler: function() {
             var canvas = this.$refs.planeLayer;

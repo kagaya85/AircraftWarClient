@@ -99,6 +99,7 @@ export default {
             this.listStart = 0;
             this.numPerPage = 5;
             this.reSendFlag = true;   // 重发控制
+            this.reqBuf = null;
             this.getUserList(this.listStart, this.numPerPage); 
             this.sendRequest();
         })
@@ -155,7 +156,7 @@ export default {
                 this.reSendCount = 0;   // 计数器置零
         },
         getUserList: function(start, number) {            
-            var buf = new Buffer.alloc(2 + UnameLen + 2);
+            var buf = Buffer.alloc(2 + UnameLen + 2);
             
             this.request = REQ_TYPE.USER_LST;                     
             this.waitfor = EVT_TYPE.USER_LST;            
@@ -169,7 +170,7 @@ export default {
             this.reqBuf = buf;
         },
         sendInvitation: function(targetUser) {
-            var buf = new Buffer.alloc(2 + UnameLen * 2);
+            var buf = Buffer.alloc(2 + UnameLen * 2);
             
             this.request = REQ_TYPE.BATTLE_IVT;            
             this.waitfor = EVT_TYPE.BATTLE_CHK;
@@ -277,7 +278,7 @@ export default {
                         ipcRenderer.send('open-refused-dialog');
                     } else {
                         // 进入房间
-                        ipcRenderer.send('open-game-ready-dialog');
+                        // ipcRenderer.send('open-game-ready-dialog');
                         this.gameReady(roomId);
                     }
                     // 已处理完请求
@@ -292,7 +293,7 @@ export default {
                     break;
                 case EVT_TYPE.ENFORCE_LGOT:
                     console.log("Enforce logout");
-                    var buf = new Buffer.alloc(2 + UnameLen + 1);
+                    var buf = Buffer.alloc(2 + UnameLen + 1);
                     this.request = REQ_TYPE.ENFORCE_LGOT;
                     
                     buf[0] = STATUS.SPECIAL;
@@ -320,7 +321,7 @@ export default {
             this.request = REQ_TYPE.HANDLE_IVT;
             this.waitfor = EVT_TYPE.BATTLE_CHK;
 
-            var buf = new Buffer.alloc(2 + UnameLen * 2 + 1);
+            var buf = Buffer.alloc(2 + UnameLen * 2 + 1);
             buf[0] = STATUS.SELECT;
             buf[1] = REQ_TYPE.HANDLE_IVT;
             buf.write(this.username, 2, 20, 'ascii');
@@ -338,7 +339,7 @@ export default {
         //     // do nothing
         // },
         logout_btn: function() {            
-            var buf = new Buffer.alloc(2 + UnameLen + 1);
+            var buf = Buffer.alloc(2 + UnameLen + 1);
             this.request = REQ_TYPE.LOGOUT;
             this.waitfor = EVT_TYPE.WAIT;
 

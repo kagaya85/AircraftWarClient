@@ -180,7 +180,7 @@ export default {
                     this.sendWait();
                     wait(1000).then(() => {
                         this.isUserTurn = false;
-                        bus.$emit("show-user")
+                        bus.$emit("show-user");
                         });
                     break;
                 case EVT_TYPE.OPCLICK:{  // 对手点击
@@ -194,7 +194,7 @@ export default {
                     
                     wait(1000).then(() => {
                         this.isUserTurn = true;
-                        bus.$emit("show-enmey");
+                        bus.$emit("show-enemy");
                         });
                     break;
                 }
@@ -211,7 +211,7 @@ export default {
                     
                     wait(1000).then(() => {
                         this.isUserTurn = true;
-                        bus.$emit("show-enmey")
+                        bus.$emit("show-enmey");
                         });
                     break;
                 }
@@ -219,8 +219,8 @@ export default {
                 case EVT_TYPE.OPLEAVE:  // 对手离开，退出房间
                     this.isBattle = true;
                     this.isEnd = true;
-                    this.gameResult = "Enemy leaved, You Win!"
-                    wait(3000).then(this.leave);
+                    this.gameResult = "Enemy leaved, You Win!";
+                    wait(2000).then(this.leave);
                     break;
                 case EVT_TYPE.WAIT:     // ACK
                     if(this.request == REQ_TYPE.LOGOUT || this.request == REQ_TYPE.ENFORCE_LGOT){
@@ -230,7 +230,7 @@ export default {
                     break;
                 case EVT_TYPE.ENFORCE_LGOT:
                     console.log('Enforce logout');
-                    var buf = new Buffer.alloc(2 + UnameLen + 1);
+                    var buf = Buffer.alloc(2 + UnameLen + 1);
                     this.request = REQ_TYPE.ENFORCE_LGOT;
                     this.waitfor = EVT_TYPE.WAIT;
 
@@ -292,7 +292,7 @@ export default {
                 this.clickPos.x = x;
                 this.clickPos.y = y;
                 // 发包
-                var buf = new Buffer.alloc(2 + UnameLen + 2);
+                var buf = Buffer.alloc(2 + UnameLen + 2);
                 
                 this.request = REQ_TYPE.CLICK;
                 this.waitfor = EVT_TYPE.CLICK;
@@ -315,13 +315,13 @@ export default {
                     // 记录第二次点击位置
                     this.clickPos2.x = x;
                     this.clickPos2.y = y;
-                    var buf = new Buffer.alloc(2 + UnameLen + 4);
+                    var buf = Buffer.alloc(2 + UnameLen + 4);
                    
                     this.request = REQ_TYPE.LOCATE;
                     this.waitfor = EVT_TYPE.LOCATE;
 
                     buf[0] = STATUS.BATTLE;
-                    buf[1] = REQ_TYPE.CLICK;
+                    buf[1] = REQ_TYPE.LOCATE;
                     buf.write(this.username, 2, 20, 'ascii');
                     buf[22] = this.clickPos.x;
                     buf[23] = this.clickPos.y;
@@ -344,7 +344,7 @@ export default {
 
         },
         sendPlanePos: function() {
-            var buf = new Buffer.alloc(2 + UnameLen + 12);
+            var buf = Buffer.alloc(2 + UnameLen + 12);
             this.request = REQ_TYPE.SEND_POS;
             this.waitfor = EVT_TYPE.START;
             
@@ -377,7 +377,7 @@ export default {
             this.reqBuf = buf;
         },
         sendUserStatus: function() {
-            var buf = new Buffer.alloc(2 + UnameLen + 1);
+            var buf = Buffer.alloc(2 + UnameLen + 1);
             this.request = REQ_TYPE.READY;
 
             buf[0] = STATUS.READY;
@@ -388,7 +388,7 @@ export default {
             this.reqBuf = buf;
         },
         sendWait: function() {
-            var buf = new Buffer.alloc(2 + UnameLen);
+            var buf = Buffer.alloc(2 + UnameLen);
             this.request = REQ_TYPE.READY;
 
             buf[0] = this.status;
